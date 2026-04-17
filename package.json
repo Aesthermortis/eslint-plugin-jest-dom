@@ -14,16 +14,16 @@
     "DTL",
     "tests"
   ],
-  "homepage": "https://github.com/testing-library/eslint-plugin-jest-dom#readme",
+  "homepage": "https://github.com/Aesthermortis/eslint-plugin-jest-dom#readme",
   "bugs": {
-    "url": "https://github.com/testing-library/eslint-plugin-jest-dom/issues"
+    "url": "https://github.com/Aesthermortis/eslint-plugin-jest-dom/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/testing-library/eslint-plugin-jest-dom"
+    "url": "https://github.com/Aesthermortis/eslint-plugin-jest-dom"
   },
   "license": "MIT",
-  "author": "Ben Monro",
+  "author": "Aesthermortis",
   "type": "module",
   "exports": {
     ".": {

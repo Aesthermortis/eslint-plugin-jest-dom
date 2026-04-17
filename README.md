@@ -22,6 +22,7 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
+- [Table of Contents](#table-of-contents)
 - [Installation](#installation)
 - [Usage](#usage)
 - [Recommended Configuration](#recommended-configuration)
@@ -39,8 +40,8 @@
 This module is distributed via [npm][npm] which is bundled with [node][node] and
 should be installed as one of your project's `devDependencies`:
 
-```
-npm install --save-dev eslint-plugin-jest-dom
+```bash
+npm install --save-dev github:Aesthermortis/eslint-plugin-jest-dom
 ```
 
 This plugin targets `Node.js 24+`, `npm 11+`, and `ESLint 10`.
@@ -52,7 +53,7 @@ to detect the full set of Testing Library queries.
 Add `jest-dom` to your `eslint.config.js` file:
 
 ```javascript
-import jestDom from "eslint-plugin-jest-dom";
+import * as jestDom from "eslint-plugin-jest-dom";
 
 export default [
   {
@@ -70,7 +71,7 @@ export default [
 Then configure the rules you want to use under the rules section.
 
 ```javascript
-import jestDom from "eslint-plugin-jest-dom";
+import * as jestDom from "eslint-plugin-jest-dom";
 
 export default [
   {
@@ -98,7 +99,7 @@ To enable this configuration with `eslint.config.js`, use
 `jestDom.configs.recommended`:
 
 ```javascript
-import jestDom from "eslint-plugin-jest-dom";
+import * as jestDom from "eslint-plugin-jest-dom";
 
 export default [
   {
@@ -201,24 +202,24 @@ MIT
 <!-- prettier-ignore-start -->
 [npm]: https://www.npmjs.com
 [node]: https://nodejs.org
-[build-badge]: https://img.shields.io/github/actions/workflow/status/testing-library/eslint-plugin-jest-dom/validate.yml?logo=github&style=flat-square
-[build]: https://github.com/testing-library/eslint-plugin-jest-dom/actions?query=workflow%3Avalidate
-[coverage-badge]: https://img.shields.io/codecov/c/github/testing-library/eslint-plugin-jest-dom.svg?style=flat-square
-[coverage]: https://codecov.io/github/testing-library/eslint-plugin-jest-dom
+[build-badge]: https://img.shields.io/github/actions/workflow/status/Aesthermortis/eslint-plugin-jest-dom/validate.yml?logo=github&style=flat-square
+[build]: https://github.com/Aesthermortis/eslint-plugin-jest-dom/actions?query=workflow%3Avalidate
+[coverage-badge]: https://img.shields.io/codecov/c/github/Aesthermortis/eslint-plugin-jest-dom.svg?style=flat-square
+[coverage]: https://codecov.io/github/Aesthermortis/eslint-plugin-jest-dom
 [version-badge]: https://img.shields.io/npm/v/eslint-plugin-jest-dom.svg?style=flat-square
 [package]: https://www.npmjs.com/package/eslint-plugin-jest-dom
 [downloads-badge]: https://img.shields.io/npm/dm/eslint-plugin-jest-dom.svg?style=flat-square
 [npmtrends]: http://www.npmtrends.com/eslint-plugin-jest-dom
 [license-badge]: https://img.shields.io/npm/l/eslint-plugin-jest-dom.svg?style=flat-square
-[license]: https://github.com/testing-library/eslint-plugin-jest-dom/blob/main/LICENSE
+[license]: https://github.com/Aesthermortis/eslint-plugin-jest-dom/blob/main/LICENSE
 [prs-badge]: https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square
 [prs]: http://makeapullrequest.com
 [coc-badge]: https://img.shields.io/badge/code%20of-conduct-ff69b4.svg?style=flat-square
-[coc]: https://github.com/testing-library/eslint-plugin-jest-dom/blob/main/other/CODE_OF_CONDUCT.md
+[coc]: https://github.com/Aesthermortis/eslint-plugin-jest-dom/blob/main/other/CODE_OF_CONDUCT.md
 [emojis]: https://github.com/all-contributors/all-contributors#emoji-key
 [all-contributors]: https://github.com/all-contributors/all-contributors
-[all-contributors-badge]: https://img.shields.io/github/all-contributors/testing-library/eslint-plugin-jest-dom?style=flat-square
-[bugs]: https://github.com/testing-library/eslint-plugin-jest-dom/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aopen+sort%3Acreated-desc+label%3Abug
-[requests]: https://github.com/testing-library/eslint-plugin-jest-dom/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aopen+sort%3Areactions-%2B1-desc+label%3Aenhancement
-[good-first-issue]: https://github.com/testing-library/eslint-plugin-jest-dom/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aopen+sort%3Areactions-%2B1-desc+label%3Aenhancement+label%3A%22good+first+issue%22
+[all-contributors-badge]: https://img.shields.io/github/all-contributors/Aesthermortis/eslint-plugin-jest-dom?style=flat-square
+[bugs]: https://github.com/Aesthermortis/eslint-plugin-jest-dom/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aopen+sort%3Acreated-desc+label%3Abug
+[requests]: https://github.com/Aesthermortis/eslint-plugin-jest-dom/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aopen+sort%3Areactions-%2B1-desc+label%3Aenhancement
+[good-first-issue]: https://github.com/Aesthermortis/eslint-plugin-jest-dom/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aopen+sort%3Areactions-%2B1-desc+label%3Aenhancement+label%3A%22good+first+issue%22
 <!-- prettier-ignore-end -->

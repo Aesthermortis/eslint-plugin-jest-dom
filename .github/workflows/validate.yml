@@ -38,7 +38,7 @@ jobs:
       id-token: write # to enable use of OIDC for trusted publishing and npm provenance
     needs: validate
     runs-on: ubuntu-latest
-    if: ${{ github.repository == 'testing-library/eslint-plugin-jest-dom' && github.ref == 'refs/heads/main' && github.event_name == 'push' }}
+    if: ${{ github.repository == 'Aesthermortis/eslint-plugin-jest-dom' && github.ref == 'refs/heads/main' && github.event_name == 'push' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
