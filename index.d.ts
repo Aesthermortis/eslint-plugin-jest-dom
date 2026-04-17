@@ -1,19 +1,21 @@
 import { type Linter, type Rule } from "eslint";
 
-declare const plugin: {
+export interface JestDomPlugin {
   meta: {
     name: string;
     version: string;
   };
   configs: {
-    all: Linter.LegacyConfig;
-    recommended: Linter.LegacyConfig;
-    "flat/all": Linter.FlatConfig;
-    "flat/recommended": Linter.FlatConfig;
+    all: Linter.Config;
+    recommended: Linter.Config;
   };
   rules: {
     [key: string]: Rule.RuleModule;
   };
-};
+}
 
-export = plugin;
+declare const plugin: JestDomPlugin;
+
+export const configs: JestDomPlugin["configs"];
+export const rules: JestDomPlugin["rules"];
+export default plugin;

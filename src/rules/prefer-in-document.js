@@ -1,20 +1,19 @@
 /**
- * @fileoverview prefer toBeInTheDocument over checking getAttribute/hasAttribute
- * @author Anton Niklasson
+ * @file Prefer ToBeInTheDocument over checking getAttribute/hasAttribute.
+ * @author Anton Niklasson.
  */
 
 /*eslint complexity: ["error", {"max": 20}]*/
 
-import { queries } from "../queries";
-import { getAssignmentForIdentifier } from "../assignment-ast";
-import { getSourceCode } from '../context';
+import { getAssignmentForIdentifier } from "../assignment-ast.js";
+import { getSourceCode } from "../context.js";
+import { queries } from "../queries.js";
 
 export const meta = {
   type: "suggestion",
   docs: {
     category: "Best Practices",
-    description:
-      "Prefer .toBeInTheDocument() for asserting the existence of a DOM node",
+    description: "Prefer .toBeInTheDocument() for asserting the existence of a DOM node",
     url: "prefer-in-document",
     recommended: true,
   },
@@ -53,10 +52,13 @@ function usesToHaveLengthZero(matcherNode, matcherArguments) {
 }
 
 /**
- * Extract the DTL query identifier from a call expression
+ * Extract the DTL query identifier from a call expression.
  *
  * <query>() -> <query>
  * screen.<query>() -> <query>
+ *
+ * @param {object | null | undefined} callExpressionNode - Candidate call expression node.
+ * @returns {object | null} The identifier or member property node when present.
  */
 function getDTLQueryIdentifierNode(callExpressionNode) {
   if (!callExpressionNode || callExpressionNode.type !== "CallExpression") {
@@ -80,7 +82,7 @@ export const create = (context) => {
       const assignment = getAssignmentForIdentifier(
         context,
         matcherArguments[0],
-        matcherArguments[0].name
+        matcherArguments[0].name,
       );
       if (!assignment) {
         return;
@@ -92,13 +94,7 @@ export const create = (context) => {
 
     return lengthValue;
   }
-  function check({
-    queryNode,
-    matcherNode,
-    matcherArguments,
-    negatedMatcher,
-    expect,
-  }) {
+  function check({ queryNode, matcherNode, matcherArguments, negatedMatcher, expect }) {
     if (matcherNode.parent.parent.type !== "CallExpression") {
       return;
     }
@@ -119,8 +115,7 @@ export const create = (context) => {
       const lengthValue = getLengthValue(matcherArguments);
       const queryName = queryNode.name || queryNode.property.name;
 
-      const isSingleQuery =
-        queries.includes(queryName) && !/AllBy/.test(queryName);
+      const isSingleQuery = queries.includes(queryName) && !/AllBy/.test(queryName);
       const hasViolation = isSingleQuery && [1, 0].includes(lengthValue);
 
       if (!hasViolation) {
@@ -143,10 +138,7 @@ export const create = (context) => {
               messageId: "replace-query-with-all",
               data: { query: queryName, allQuery },
               fix(fixer) {
-                return fixer.replaceText(
-                  queryNode.property || queryNode,
-                  allQuery
-                );
+                return fixer.replaceText(queryNode.property || queryNode, allQuery);
               },
             },
             {
@@ -154,9 +146,7 @@ export const create = (context) => {
               fix(fixer) {
                 // Remove any arguments in the matcher
                 return [
-                  ...Array.from(matcherArguments).map((argument) =>
-                    fixer.remove(argument)
-                  ),
+                  ...Array.from(matcherArguments).map((argument) => fixer.remove(argument)),
                   fixer.replaceText(matcherNode, "toBeInTheDocument"),
                 ];
               },
@@ -168,10 +158,7 @@ export const create = (context) => {
 
     // toBe() or toEqual() are only invalid with null
     if (matcherNode.name === "toBe" || matcherNode.name === "toEqual") {
-      if (
-        !matcherArguments.length ||
-        !usesToBeOrToEqualWithNull(matcherNode, matcherArguments)
-      ) {
+      if (!matcherArguments.length || !usesToBeOrToEqualWithNull(matcherNode, matcherArguments)) {
         return;
       }
     }
@@ -199,10 +186,7 @@ export const create = (context) => {
 
           // AllBy should not be used with toBeInTheDocument
           operations.push(
-            fixer.replaceText(
-              queryNode.property || queryNode,
-              query.replace("All", "")
-            )
+            fixer.replaceText(queryNode.property || queryNode, query.replace("All", "")),
           );
           // Flip the .not if necessary
           if (isAntonymMatcher(matcherNode, matcherArguments)) {
@@ -210,8 +194,8 @@ export const create = (context) => {
               operations.push(
                 fixer.replaceTextRange(
                   [expect.range[1], matcherNode.range[1]],
-                  ".toBeInTheDocument"
-                )
+                  ".toBeInTheDocument",
+                ),
               );
 
               return operations;
@@ -232,15 +216,14 @@ export const create = (context) => {
   return {
     // expect(<query>).not.<matcher>
     [`CallExpression[callee.object.object.callee.name='expect'][callee.object.property.name='not'][callee.property.name=${alternativeMatchers}], CallExpression[callee.object.callee.name='expect'][callee.object.property.name='not'][callee.object.arguments.0.argument.callee.name=${alternativeMatchers}]`](
-      node
+      node,
     ) {
       if (!node.callee.object.object.arguments.length) {
         return;
       }
 
       const arg = node.callee.object.object.arguments[0];
-      const queryNode =
-        arg.type === "AwaitExpression" ? arg.argument.callee : arg.callee;
+      const queryNode = arg.type === "AwaitExpression" ? arg.argument.callee : arg.callee;
       const matcherNode = node.callee.property;
       const matcherArguments = node.arguments;
 
@@ -255,12 +238,12 @@ export const create = (context) => {
     },
     // // const foo = <query> expect(foo).not.<matcher>
     [`MemberExpression[object.object.callee.name=expect][object.property.name=not][property.name=${alternativeMatchers}][object.object.arguments.0.type=Identifier]`](
-      node
+      node,
     ) {
       const queryNode = getAssignmentForIdentifier(
         context,
         node,
-        node.object.object.arguments[0].name
+        node.object.object.arguments[0].name,
       );
 
       // Not an RTL query
@@ -283,13 +266,13 @@ export const create = (context) => {
     },
     // const foo = <query> expect(foo).<matcher>
     [`MemberExpression[object.callee.name=expect][property.name=${alternativeMatchers}][object.arguments.0.type=Identifier]`](
-      node
+      node,
     ) {
       // Value expression being assigned to the left-hand value
       const rightValueNode = getAssignmentForIdentifier(
         context,
         node,
-        node.object.arguments[0].name
+        node.object.arguments[0].name,
       );
 
       // Not a DTL query
@@ -312,7 +295,7 @@ export const create = (context) => {
     // expect(await <query>).<matcher>
     // expect(<query>).<matcher>
     [`CallExpression[callee.object.callee.name='expect'][callee.property.name=${alternativeMatchers}], CallExpression[callee.object.callee.name='expect'][callee.object.arguments.0.argument.callee.name=${alternativeMatchers}]`](
-      node
+      node,
     ) {
       const arg = node.callee.object.arguments[0];
 

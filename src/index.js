@@ -1,31 +1,19 @@
 /**
- * @fileoverview lint rules for use with jest-dom
- * @author Ben Monro
+ * @file Lint Rules for use with jest-dom.
+ * @author Ben Monro.
  */
 
-//------------------------------------------------------------------------------
-// Requirements
-//------------------------------------------------------------------------------
+import { createRequire } from "node:module";
 
-import requireIndex from "requireindex";
-import {
-  name as packageName,
-  version as packageVersion,
-} from "../package.json";
+import rules from "./rules/index.js";
 
-//------------------------------------------------------------------------------
-// Plugin Definition
-//------------------------------------------------------------------------------
+const require = createRequire(import.meta.url);
+const { name: packageName, version: packageVersion } = require("../package.json");
 
-// import all rules in src/rules and re-export them for .eslintrc configs
-export const rules = requireIndex(`${__dirname}/rules`);
+export { rules };
 
-const allRules = Object.entries(rules).reduce(
-  (memo, [name]) => ({
-    ...memo,
-    ...{ [`jest-dom/${name}`]: "error" },
-  }),
-  {}
+const allRules = Object.fromEntries(
+  Object.keys(rules).map((name) => [`jest-dom/${name}`, "error"]),
 );
 
 const recommendedRules = allRules;
@@ -48,18 +36,14 @@ const plugin = {
   rules,
 };
 
-plugin.configs["flat/recommended"] = {
+plugin.configs.recommended = {
   plugins: { "jest-dom": plugin },
   rules: recommendedRules,
 };
-plugin.configs["flat/all"] = {
+plugin.configs.all = {
   plugins: { "jest-dom": plugin },
   rules: allRules,
 };
 
 export default plugin;
-
-// explicitly export config to allow using this plugin in CJS-based
-// eslint.config.js files without needing to deal with the .default
-// and also retain backwards compatibility with `.eslintrc` configs
 export const configs = plugin.configs;

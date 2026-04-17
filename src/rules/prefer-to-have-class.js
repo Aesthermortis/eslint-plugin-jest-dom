@@ -1,10 +1,10 @@
 /**
- * @fileoverview prefer toHaveClass over checking element className
- * @author Ben Monro
+ * @file Prefer ToHaveClass over checking element className.
+ * @author Ben Monro.
  */
 
-import { getQueryNodeFrom } from "../assignment-ast";
-import { getSourceCode } from '../context';
+import { getQueryNodeFrom } from "../assignment-ast.js";
+import { getSourceCode } from "../context.js";
 
 //------------------------------------------------------------------------------
 // Rule Definition
@@ -27,7 +27,7 @@ export const meta = {
 export const create = (context) => ({
   //expect(el.classList.contains("foo")).toBe(true)
   [`CallExpression[callee.object.callee.name=expect][callee.object.arguments.0.callee.object.property.name=classList][callee.object.arguments.0.callee.property.name=contains][callee.property.name=/toBe(Truthy|Falsy)?|to(Strict)?Equal/]`](
-    node
+    node,
   ) {
     const classValue = node.callee.object.arguments[0].arguments[0];
     const checkedProp = node.callee.object.arguments[0].callee.object.object;
@@ -35,8 +35,7 @@ export const create = (context) => ({
     const [matcherArg] = node.arguments;
     const [expectArg] = node.callee.object.arguments;
     const isTruthy =
-      (matcher.name === "toBe" && matcherArg.value === true) ||
-      matcher.name === "toBeTruthy";
+      (matcher.name === "toBe" && matcherArg.value === true) || matcher.name === "toBeTruthy";
 
     context.report({
       node: matcher,
@@ -47,13 +46,10 @@ export const create = (context) => ({
 
           fixer.replaceText(matcher, `${isTruthy ? "" : "not."}toHaveClass`),
           matcherArg
-            ? fixer.replaceText(
-                matcherArg,
-                getSourceCode(context).getText(classValue)
-              )
+            ? fixer.replaceText(matcherArg, getSourceCode(context).getText(classValue))
             : fixer.insertTextBefore(
                 getSourceCode(context).getTokenAfter(matcher, { skip: 1 }),
-                getSourceCode(context).getText(classValue)
+                getSourceCode(context).getText(classValue),
               ),
         ];
       },
@@ -62,7 +58,7 @@ export const create = (context) => ({
 
   //expect(el.classList[0]).toBe("bar")
   [`CallExpression[callee.object.callee.name=expect][callee.object.arguments.0.object.property.name=classList][callee.property.name=/toBe$|to(Strict)?Equal|toContain/][arguments.0.type=/Literal$/]`](
-    node
+    node,
   ) {
     const [classValue] = node.arguments;
     const matcher = node.callee.property;
@@ -76,15 +72,9 @@ export const create = (context) => ({
         //can't autofix here as it toHaveClass doesn't have a partial matcher / regex for class names.
         if (matcher.name === "toContain") return;
         return [
-          fixer.removeRange([
-            classNameProp.object.range[1],
-            expectArg.range[1],
-          ]),
+          fixer.removeRange([classNameProp.object.range[1], expectArg.range[1]]),
           fixer.replaceText(matcher, "toHaveClass"),
-          fixer.replaceText(
-            classValue,
-            getSourceCode(context).getText(classValue)
-          ),
+          fixer.replaceText(classValue, getSourceCode(context).getText(classValue)),
         ];
       },
     });
@@ -92,7 +82,7 @@ export const create = (context) => ({
 
   //expect(el.classList[0]).not.toBe("bar")
   [`CallExpression[callee.object.object.callee.name=expect][callee.object.object.arguments.0.object.property.name=classList][callee.object.property.name=not][callee.property.name=/toBe$|to(Strict)?Equal|toContain/][arguments.0.type=/Literal$/]`](
-    node
+    node,
   ) {
     //can't autofix this case because the class could be in another element of the classList array.
     context.report({
@@ -102,7 +92,7 @@ export const create = (context) => ({
   },
   //expect(el.className | el.classList).toBe("bar") / toStrict?Equal / toContain
   [`CallExpression[callee.object.callee.name=expect][callee.object.arguments.0.property.name=/class(Name|List)/][callee.property.name=/toBe$|to(Strict)?Equal|toContain/]`](
-    node
+    node,
   ) {
     const checkedProp = node.callee.object.arguments[0].property;
     const [classValue] = node.arguments;
@@ -136,7 +126,7 @@ export const create = (context) => ({
             classValue,
             `${getSourceCode(context).getText(classValue)}${
               matcher.name === "toContain" ? "" : ", { exact: true }"
-            }`
+            }`,
           ),
         ];
       },
@@ -145,7 +135,7 @@ export const create = (context) => ({
 
   //expect(el.className | el.classList).toEqual(expect.stringContaining("foo") | objectContaining) / toStrictEqual
   [`CallExpression[callee.object.callee.name=expect][callee.object.arguments.0.property.name=/class(Name|List)/][callee.property.name=/to(Strict)?Equal/][arguments.0.callee.object.name=expect]`](
-    node
+    node,
   ) {
     const className = node.callee.object.arguments[0].property;
     const [classValue] = node.arguments[0].arguments;
@@ -163,10 +153,7 @@ export const create = (context) => ({
         return [
           fixer.removeRange([classNameProp.range[1], className.range[1]]),
           fixer.replaceText(matcher, "toHaveClass"),
-          fixer.replaceText(
-            node.arguments[0],
-            `${getSourceCode(context).getText(classValue)}`
-          ),
+          fixer.replaceText(node.arguments[0], `${getSourceCode(context).getText(classValue)}`),
         ];
       },
     });
@@ -174,7 +161,7 @@ export const create = (context) => ({
 
   //expect(screen.getByRole("button").className | classList).not.toBe("foo"); / toStrict?Equal / toContain
   [`CallExpression[callee.object.object.callee.name=expect][callee.object.object.arguments.0.property.name=/class(Name|List)/][callee.object.property.name=not][callee.property.name=/toBe$|to(Strict)?Equal|toContain/]`](
-    node
+    node,
   ) {
     const className = node.callee.object.object.arguments[0].property;
     const [classValue] = node.arguments;
@@ -198,7 +185,7 @@ export const create = (context) => ({
             classValue,
             `${getSourceCode(context).getText(classValue)}${
               matcher.name === "toContain" ? "" : ", { exact: true }"
-            }`
+            }`,
           ),
         ];
       },
@@ -214,10 +201,7 @@ export const create = (context) => ({
     const matcher = node.callee.property;
     const [classArg, classValueArg] = node.arguments;
 
-    const classNameValue = context
-      .getSourceCode()
-      .getText(classArg)
-      .slice(1, -1);
+    const classNameValue = context.getSourceCode().getText(classArg).slice(1, -1);
     if (
       (matcher.name === "toHaveAttribute" && classNameValue !== "class") ||
       (matcher.name === "toHaveProperty" && classNameValue !== "className")
@@ -225,10 +209,7 @@ export const create = (context) => ({
       return;
     }
 
-    const { isDTLQuery } = getQueryNodeFrom(
-      context,
-      node.callee.object.arguments[0]
-    );
+    const { isDTLQuery } = getQueryNodeFrom(context, node.callee.object.arguments[0]);
     if (!isDTLQuery) return;
     context.report({
       node: matcher,
@@ -236,10 +217,7 @@ export const create = (context) => ({
       fix(fixer) {
         return [
           fixer.replaceText(matcher, "toHaveClass"),
-          fixer.replaceText(
-            classArg,
-            getSourceCode(context).getText(classValueArg)
-          ),
+          fixer.replaceText(classArg, getSourceCode(context).getText(classValueArg)),
           fixer.replaceText(classValueArg, `{ exact: true }`),
         ];
       },
@@ -255,10 +233,7 @@ export const create = (context) => ({
     //[callee.object.property.name=/toHaveAttribute|toHaveProperty/][arguments.0.value=class][arguments.1.type=/Literal$/]
     const matcher = node.callee.property;
     const [classArg, classValueArg] = node.arguments;
-    const classNameValue = context
-      .getSourceCode()
-      .getText(classArg)
-      .slice(1, -1);
+    const classNameValue = context.getSourceCode().getText(classArg).slice(1, -1);
     if (
       (matcher.name === "toHaveAttribute" && classNameValue !== "class") ||
       (matcher.name === "toHaveProperty" && classNameValue !== "className")
@@ -266,10 +241,7 @@ export const create = (context) => ({
       return;
     }
 
-    const { isDTLQuery } = getQueryNodeFrom(
-      context,
-      node.callee.object.object.arguments[0]
-    );
+    const { isDTLQuery } = getQueryNodeFrom(context, node.callee.object.object.arguments[0]);
     if (!isDTLQuery) return;
     context.report({
       node: matcher,
@@ -277,10 +249,7 @@ export const create = (context) => ({
       fix(fixer) {
         return [
           fixer.replaceText(matcher, "toHaveClass"),
-          fixer.replaceText(
-            classArg,
-            getSourceCode(context).getText(classValueArg)
-          ),
+          fixer.replaceText(classArg, getSourceCode(context).getText(classValueArg)),
           fixer.replaceText(classValueArg, `{ exact: true }`),
         ];
       },
@@ -297,10 +266,7 @@ export const create = (context) => ({
     const [classArg, classValue] = node.arguments;
     const classValueArg = classValue.arguments[0];
 
-    const classNameValue = context
-      .getSourceCode()
-      .getText(classArg)
-      .slice(1, -1);
+    const classNameValue = context.getSourceCode().getText(classArg).slice(1, -1);
     if (
       (matcher.name === "toHaveAttribute" && classNameValue !== "class") ||
       (matcher.name === "toHaveProperty" && classNameValue !== "className")
@@ -308,10 +274,7 @@ export const create = (context) => ({
       return;
     }
 
-    const { isDTLQuery } = getQueryNodeFrom(
-      context,
-      node.callee.object.arguments[0]
-    );
+    const { isDTLQuery } = getQueryNodeFrom(context, node.callee.object.arguments[0]);
     if (!isDTLQuery) return;
 
     context.report({
@@ -320,10 +283,7 @@ export const create = (context) => ({
       fix(fixer) {
         return [
           fixer.replaceText(matcher, "toHaveClass"),
-          fixer.replaceText(
-            classArg,
-            getSourceCode(context).getText(classValueArg)
-          ),
+          fixer.replaceText(classArg, getSourceCode(context).getText(classValueArg)),
           fixer.removeRange([classArg.range[1], classValue.range[1]]),
         ];
       },

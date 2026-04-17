@@ -1,10 +1,11 @@
 /**
- * @fileoverview prefer toBeDisabled or toBeEnabled over attribute checks
- * @author Ben Monro
+ * @file Prefer ToBeDisabled or toBeEnabled over attribute checks.
+ * @author Ben Monro.
  */
 
-import { RuleTester } from "eslint";
-import createBannedAttributeTestCases from "../../__fixtures__/createBannedAttributeTestCases";
+import createBannedAttributeTestCases from "../fixtures/createBannedAttributeTestCases.js";
+import { FlatCompatRuleTester as RuleTester } from "../rule-tester.js";
+import rules from "../../src/rules/index.js";
 
 const bannedAttributes = [
   {
@@ -27,29 +28,27 @@ const bannedAttributes = [
   },
 ];
 
-bannedAttributes.forEach(
-  ({ preferred, negatedPreferred, attributes, ruleName }) => {
-    const rule = require(`../../../rules/${ruleName}`);
+bannedAttributes.forEach(({ preferred, negatedPreferred, attributes, ruleName }) => {
+  const rule = rules[ruleName];
 
-    // const preferred = 'toBeDisabled()';
-    // const negatedPreferred = 'toBeEnabled()';
-    // const attributes = ['disabled'];
-    const ruleTester = new RuleTester({
-      parserOptions: { ecmaVersion: 2015, sourceType: "module" },
-    });
-    attributes.forEach((attribute) => {
-      ruleTester.run(
-        ruleName,
-        rule,
-        createBannedAttributeTestCases({
-          preferred,
-          negatedPreferred,
-          attribute,
-        })
-      );
-    });
-  }
-);
+  // const preferred = 'toBeDisabled()';
+  // const negatedPreferred = 'toBeEnabled()';
+  // const attributes = ['disabled'];
+  const ruleTester = new RuleTester({
+    parserOptions: { ecmaVersion: 2015, sourceType: "module" },
+  });
+  attributes.forEach((attribute) => {
+    ruleTester.run(
+      ruleName,
+      rule,
+      createBannedAttributeTestCases({
+        preferred,
+        negatedPreferred,
+        attribute,
+      }),
+    );
+  });
+});
 
 // Test that excludeValues ("mixed") are not flagged by prefer-checked
 const excludeValuesCases = [
@@ -60,7 +59,7 @@ const excludeValuesCases = [
 ];
 
 excludeValuesCases.forEach(({ ruleName, attribute }) => {
-  const rule = require(`../../../rules/${ruleName}`);
+  const rule = rules[ruleName];
   const ruleTester = new RuleTester({
     parserOptions: { ecmaVersion: 2015, sourceType: "module" },
   });

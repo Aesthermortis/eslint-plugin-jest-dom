@@ -1,8 +1,13 @@
 /**
- * @fileoverview prefer toHaveAttribute over checking  getAttribute/hasAttribute
- * @author Ben Monro
+ * @file Prefer ToHaveAttribute over checking getAttribute/hasAttribute.
+ * @author Ben Monro.
  */
-import { getSourceCode } from '../context';
+import { getSourceCode } from "../context.js";
+
+const escapeForRegexLiteral = (value) =>
+  value.toString().replaceAll(/[.*+\-?^${}()|[\]\\/]/g, "\\$&");
+const getReplacementPattern = (expectedArg, expectedArgSource) =>
+  expectedArg.regex ? expectedArgSource : `/${escapeForRegexLiteral(expectedArg.value)}/`;
 
 export const meta = {
   docs: {
@@ -16,7 +21,7 @@ export const meta = {
 
 export const create = (context) => ({
   [`MemberExpression[property.name='textContent'][parent.callee.name='expect'][parent.parent.property.name=/toContain$|toMatch$/]`](
-    node
+    node,
   ) {
     const expectedArg = node.parent.parent.parent.arguments[0];
 
@@ -27,58 +32,43 @@ export const create = (context) => ({
       fix: (fixer) => {
         return [
           fixer.removeRange([node.object.range[1], node.property.range[1]]),
-          fixer.replaceTextRange(
-            node.parent.parent.property.range,
-            "toHaveTextContent"
-          ),
+          fixer.replaceTextRange(node.parent.parent.property.range, "toHaveTextContent"),
           fixer.replaceTextRange(
             expectedArg.range,
             expectedArg.type === "Literal"
-              ? expectedArg.regex
-                ? expectedArgSource
-                : new RegExp(
-                    expectedArg.value
-                      .toString()
-                      .replace(/[.*+\-?^${}()|[\]\\]/g, "\\$&")
-                  )
-              : `new RegExp(${expectedArgSource})`
+              ? getReplacementPattern(expectedArg, expectedArgSource)
+              : `new RegExp(${expectedArgSource})`,
           ),
         ];
       },
     });
   },
   [`MemberExpression[property.name='textContent'][parent.callee.name='expect'][parent.parent.property.name=/toBe$|to(Strict)?Equal/]`](
-    node
+    node,
   ) {
     context.report({
       node: node.parent,
       message: `Use toHaveTextContent instead of asserting on DOM node attributes`,
       fix: (fixer) => [
         fixer.removeRange([node.object.range[1], node.property.range[1]]),
-        fixer.replaceTextRange(
-          node.parent.parent.property.range,
-          "toHaveTextContent"
-        ),
+        fixer.replaceTextRange(node.parent.parent.property.range, "toHaveTextContent"),
       ],
     });
   },
   [`MemberExpression[property.name='textContent'][parent.callee.name='expect'][parent.parent.property.name='not'][parent.parent.parent.property.name=/toBe$|to(Strict)?Equal/]`](
-    node
+    node,
   ) {
     context.report({
       node: node.parent,
       message: `Use toHaveTextContent instead of asserting on DOM node attributes`,
       fix: (fixer) => [
         fixer.removeRange([node.object.range[1], node.property.range[1]]),
-        fixer.replaceTextRange(
-          node.parent.parent.parent.property.range,
-          "toHaveTextContent"
-        ),
+        fixer.replaceTextRange(node.parent.parent.parent.property.range, "toHaveTextContent"),
       ],
     });
   },
   [`MemberExpression[property.name='textContent'][parent.callee.name='expect'][parent.parent.property.name='not'][parent.parent.parent.property.name=/toContain$|toMatch$/]`](
-    node
+    node,
   ) {
     const expectedArg = node.parent.parent.parent.parent.arguments[0];
     const expectedArgSource = getSourceCode(context).getText(expectedArg);
@@ -87,21 +77,12 @@ export const create = (context) => ({
       message: `Use toHaveTextContent instead of asserting on DOM node attributes`,
       fix: (fixer) => [
         fixer.removeRange([node.object.range[1], node.property.range[1]]),
-        fixer.replaceTextRange(
-          node.parent.parent.parent.property.range,
-          "toHaveTextContent"
-        ),
+        fixer.replaceTextRange(node.parent.parent.parent.property.range, "toHaveTextContent"),
         fixer.replaceTextRange(
           expectedArg.range,
           expectedArg.type === "Literal"
-            ? expectedArg.regex
-              ? expectedArgSource
-              : new RegExp(
-                  expectedArg.value
-                    .toString()
-                    .replace(/[.*+\-?^${}()|[\]\\]/g, "\\$&")
-                )
-            : `new RegExp(${expectedArgSource})`
+            ? getReplacementPattern(expectedArg, expectedArgSource)
+            : `new RegExp(${expectedArgSource})`,
         ),
       ],
     });

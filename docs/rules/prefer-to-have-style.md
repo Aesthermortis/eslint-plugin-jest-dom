@@ -1,4 +1,6 @@
-# Prefer toHaveStyle over checking element style (`jest-dom/prefer-to-have-style`)
+# jest-dom/prefer-to-have-style
+
+📝 Prefer toHaveStyle over checking element style.
 
 💼 This rule is enabled in the ✅ `recommended` config.
 
@@ -20,10 +22,7 @@ expect(el.style).toHaveProperty("background-color", "green");
 expect(screen.getByTestId("foo").style["scroll-snap-type"]).toBe("x mandatory");
 expect(el.style).toContain("background-color");
 expect(el.style).not.toContain("background-color");
-expect(el).toHaveAttribute(
-  "style",
-  "background-color: green; border-width: 10px; color: blue;"
-);
+expect(el).toHaveAttribute("style", "background-color: green; border-width: 10px; color: blue;");
 ```
 
 Examples of **correct** code for this rule:

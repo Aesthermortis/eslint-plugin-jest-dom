@@ -1,9 +1,7 @@
-import { FlatCompatRuleTester as RuleTester } from '../../rule-tester';
-import * as rule from "../../../rules/prefer-to-have-style";
+import { FlatCompatRuleTester as RuleTester } from "../rule-tester.js";
+import * as rule from "../../src/rules/prefer-to-have-style.js";
 
-const errors = [
-  { message: "Use toHaveStyle instead of asserting on element style" },
-];
+const errors = [{ message: "Use toHaveStyle instead of asserting on element style" }];
 const ruleTester = new RuleTester({ parserOptions: { ecmaVersion: 2015 } });
 ruleTester.run("prefer-to-have-style", rule, {
   valid: [

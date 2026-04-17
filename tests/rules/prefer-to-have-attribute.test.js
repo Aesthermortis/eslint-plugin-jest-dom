@@ -1,15 +1,14 @@
-/* eslint-disable no-template-curly-in-string */
 /**
- * @fileoverview prefer toHaveAttribute over checking  getAttribute/hasAttribute
- * @author Ben Monro
+ * @file Prefer ToHaveAttribute over checking getAttribute/hasAttribute.
+ * @author Ben Monro.
  */
 
 //------------------------------------------------------------------------------
 // Requirements
 //------------------------------------------------------------------------------
 
-import { FlatCompatRuleTester as RuleTester } from '../../rule-tester';
-import * as rule from "../../../rules/prefer-to-have-attribute";
+import { FlatCompatRuleTester as RuleTester } from "../rule-tester.js";
+import * as rule from "../../src/rules/prefer-to-have-attribute.js";
 
 //------------------------------------------------------------------------------
 // Tests

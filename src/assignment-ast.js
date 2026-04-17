@@ -1,15 +1,15 @@
-import { queries } from "./queries";
-import { getScope } from './context';
+import { getScope } from "./context.js";
+import { queries } from "./queries.js";
 
 /**
- * Gets the inner relevant node (CallExpression, Identity, et al.) given a generic expression node
- * await someAsyncFunc() => someAsyncFunc()
- * someElement as HTMLDivElement => someElement
+ * Gets the inner relevant node (CallExpression, Identity, et al.) given a generic expression node await someAsyncFunc()
+ * => someAsyncFunc()
+ * someElement as HTMLDivElement => someElement.
  *
- * @param {Object} context - Context for a rule
- * @param {Object} node - Node for a rule
- * @param {Object} expression - An expression node
- * @returns {Object} - A node
+ * @param {object} context - Context for a rule.
+ * @param {object} node - Node for a rule.
+ * @param {object} expression - An expression node.
+ * @returns {object} A node.
  */
 export function getInnerNodeFrom(context, node, expression) {
   switch (expression.type) {
@@ -29,10 +29,10 @@ export function getInnerNodeFrom(context, node, expression) {
 /**
  * Get the node corresponding to the latest assignment to a variable named `identifierName`
  *
- * @param {Object} context - Context for a rule
- * @param {Object} node - Node for a rule
- * @param {String} identifierName - Name of an identifier
- * @returns {Object} - A node, possibly undefined
+ * @param {object} context - Context for a rule.
+ * @param {object} node - Node for a rule.
+ * @param {string} identifierName - Name of an identifier.
+ * @returns {object | undefined} A node, possibly undefined.
  */
 export function getAssignmentForIdentifier(context, node, identifierName) {
   const variable = getScope(context, node).set.get(identifierName);
@@ -47,9 +47,7 @@ export function getAssignmentForIdentifier(context, node, identifierName) {
   } else {
     // let foo;
     // foo = bar;
-    const assignmentRef = variable.references
-      .reverse()
-      .find((ref) => !!ref.writeExpr);
+    const assignmentRef = variable.references.reverse().find((ref) => !!ref.writeExpr);
     if (!assignmentRef) {
       return;
     }
@@ -59,12 +57,13 @@ export function getAssignmentForIdentifier(context, node, identifierName) {
 }
 
 /**
- * get query node, arg and isDTLQuery flag for a given node.  useful for rules that you only
- * want to apply to dom elements.
+ * Get query node, arg and isDTLQuery flag for a given node. useful for rules that you only want to apply to dom
+ * elements.
  *
- * @param {Object} context - Context for a rule
- * @param {Object} nodeWithValueProp - AST Node to get the query from
- * @returns {Object} - Object with query, queryArg & isDTLQuery
+ * @param {object} context - Context for a rule.
+ * @param {object} nodeWithValueProp - AST node to get the query from.
+ * @returns {{ isDTLQuery: boolean; query: string | null; queryArg: unknown }} Object with query, queryArg, and
+ *                                                                             isDTLQuery.
  */
 export function getQueryNodeFrom(context, nodeWithValueProp) {
   const queryNode = getInnerNodeFrom(context, nodeWithValueProp, nodeWithValueProp);
@@ -78,8 +77,7 @@ export function getQueryNodeFrom(context, nodeWithValueProp) {
   }
 
   const query =
-    queryNode.callee.name ||
-    (queryNode.callee.property && queryNode.callee.property.name);
+    queryNode.callee.name || (queryNode.callee.property && queryNode.callee.property.name);
   const queryArg = queryNode.arguments[0] && queryNode.arguments[0].value;
   const isDTLQuery = queries.includes(query);
 

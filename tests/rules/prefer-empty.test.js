@@ -1,15 +1,14 @@
-/* eslint-disable no-template-curly-in-string */
 /**
- * @fileoverview Prefer toBeEmptyDOMElement over checking innerHTML
- * @author Ben Monro
+ * @file Prefer ToBeEmptyDOMElement over checking innerHTML.
+ * @author Ben Monro.
  */
 
 //------------------------------------------------------------------------------
 // Requirements
 //------------------------------------------------------------------------------
 
-import { FlatCompatRuleTester as RuleTester } from '../../rule-tester';
-import * as rule from '../../../rules/prefer-empty';
+import { FlatCompatRuleTester as RuleTester } from "../rule-tester.js";
+import * as rule from "../../src/rules/prefer-empty.js";
 
 //------------------------------------------------------------------------------
 // Tests

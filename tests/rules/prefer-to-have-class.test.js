@@ -1,5 +1,5 @@
-import { FlatCompatRuleTester as RuleTester } from '../../rule-tester';
-import * as rule from "../../../rules/prefer-to-have-class";
+import { FlatCompatRuleTester as RuleTester } from "../rule-tester.js";
+import * as rule from "../../src/rules/prefer-to-have-class.js";
 
 const errors = [{ messageId: "use-to-have-class" }];
 const ruleTester = new RuleTester({ parserOptions: { ecmaVersion: 2015 } });

@@ -1,10 +1,10 @@
 /* istanbul ignore next */
 export function getSourceCode(context) {
-  if ('sourceCode' in context) {
+  if (context.sourceCode) {
     return context.sourceCode;
   }
 
-  return context.getSourceCode();
+  return context.getSourceCode?.();
 }
 
 /* istanbul ignore next */
@@ -15,5 +15,5 @@ export function getScope(context, node) {
     return sourceCode.getScope(node);
   }
 
-  return context.getScope();
+  return context.getScope?.(node);
 }

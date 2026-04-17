@@ -1,31 +1,14 @@
-const TestingLibraryDomRef = { throwWhenRequiring: false };
-
-const requireQueries = (throwWhenRequiring) => {
-  jest.resetModules();
-
-  TestingLibraryDomRef.throwWhenRequiring = throwWhenRequiring;
-
-  return require("../queries");
-};
-
-jest.mock("@testing-library/dom", () => {
-  if (TestingLibraryDomRef.throwWhenRequiring) {
-    throw new (class extends Error {
-      constructor(message) {
-        super(message);
-        this.code = "MODULE_NOT_FOUND";
-      }
-    })();
-  }
-
-  return jest.requireActual("@testing-library/dom");
-});
+import { queries, resolveQueries } from "../src/queries.js";
 
 describe("when @testing-library/dom is not available", () => {
   it("uses the default queries", () => {
-    const { queries } = requireQueries(true);
+    const fallbackQueries = resolveQueries(() => {
+      const error = new Error("module not found");
+      error.code = "MODULE_NOT_FOUND";
+      throw error;
+    });
 
-    expect([...queries].sort()).toStrictEqual([
+    expect([...fallbackQueries].sort()).toStrictEqual([
       "findAllByAltText",
       "findAllByDisplayValue",
       "findAllByLabelText",
@@ -80,8 +63,6 @@ describe("when @testing-library/dom is not available", () => {
 
 describe("when @testing-library/dom is available", () => {
   it("returns the queries from the library", () => {
-    const { queries } = requireQueries(false);
-
     expect([...queries].sort()).toStrictEqual([
       "findAllByAltText",
       "findAllByDisplayValue",
@@ -135,12 +116,10 @@ describe("when @testing-library/dom is available", () => {
   });
 
   it("re-throws unexpected errors", () => {
-    jest.mock("@testing-library/dom", () => {
-      throw new Error("oh noes!");
-    });
-
-    jest.resetModules();
-
-    expect(() => require("../queries")).toThrow(/oh noes!/iu);
+    expect(() =>
+      resolveQueries(() => {
+        throw new Error("oh noes!");
+      }),
+    ).toThrow(/oh noes!/iu);
   });
 });

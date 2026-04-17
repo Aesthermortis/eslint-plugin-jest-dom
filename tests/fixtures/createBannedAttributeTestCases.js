@@ -1,5 +1,3 @@
-/* eslint-disable max-lines-per-function */
-
 export default ({ preferred, negatedPreferred, attribute }) => {
   const doubleNegativeCases = negatedPreferred.startsWith("toBe")
     ? [

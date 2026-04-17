@@ -1,10 +1,10 @@
 /**
- * @fileoverview prefer toHaveFocus over checking document.activeElement
- * @author Ben Monro
+ * @file Prefer ToHaveFocus over checking document.activeElement.
+ * @author Ben Monro.
  */
 
-import { FlatCompatRuleTester as RuleTester } from '../../rule-tester';
-import * as rule from "../../../rules/prefer-focus";
+import { FlatCompatRuleTester as RuleTester } from "../rule-tester.js";
+import * as rule from "../../src/rules/prefer-focus.js";
 
 const ruleTester = new RuleTester();
 ruleTester.run("prefer-focus", rule, {

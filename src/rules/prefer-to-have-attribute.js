@@ -1,8 +1,8 @@
 /**
- * @fileoverview prefer toHaveAttribute over checking  getAttribute/hasAttribute
- * @author Ben Monro
+ * @file Prefer ToHaveAttribute over checking getAttribute/hasAttribute.
+ * @author Ben Monro.
  */
-import { getSourceCode } from '../context';
+import { getSourceCode } from "../context.js";
 
 //------------------------------------------------------------------------------
 // Rule Definition
@@ -11,8 +11,7 @@ import { getSourceCode } from '../context';
 export const meta = {
   docs: {
     category: "Best Practices",
-    description:
-      "prefer toHaveAttribute over checking  getAttribute/hasAttribute ",
+    description: "prefer toHaveAttribute over checking  getAttribute/hasAttribute ",
     url: "prefer-to-have-attribute",
     recommended: true,
   },
@@ -21,7 +20,7 @@ export const meta = {
 
 export const create = (context) => ({
   [`CallExpression[callee.property.name='getAttribute'][parent.callee.name='expect'][parent.parent.property.name=/toBeNull/]`](
-    node
+    node,
   ) {
     context.report({
       node: node.parent,
@@ -29,19 +28,14 @@ export const create = (context) => ({
       fix: (fixer) => [
         fixer.removeRange([node.callee.object.range[1], node.range[1]]),
         fixer.replaceTextRange(
-          [
-            node.parent.parent.property.range[0],
-            node.parent.parent.parent.range[1],
-          ],
-          `not.toHaveAttribute(${context
-            .getSourceCode()
-            .getText(node.arguments[0])})`
+          [node.parent.parent.property.range[0], node.parent.parent.parent.range[1]],
+          `not.toHaveAttribute(${context.getSourceCode().getText(node.arguments[0])})`,
         ),
       ],
     });
   },
   [`CallExpression[callee.property.name='getAttribute'][parent.callee.name='expect'][parent.parent.property.name=/toContain$|toMatch$/]`](
-    node
+    node,
   ) {
     const sourceCode = getSourceCode(context);
     context.report({
@@ -53,16 +47,16 @@ export const create = (context) => ({
         fixer.replaceText(
           node.parent.parent.parent.arguments[0],
           `${sourceCode.getText(
-            node.arguments[0]
+            node.arguments[0],
           )}, expect.string${node.parent.parent.property.name.slice(
-            2
-          )}ing(${sourceCode.getText(node.parent.parent.parent.arguments[0])})`
+            2,
+          )}ing(${sourceCode.getText(node.parent.parent.parent.arguments[0])})`,
         ),
       ],
     });
   },
   [`CallExpression[callee.property.name='getAttribute'][parent.callee.name='expect'][parent.parent.property.name=/toBe$|to(Strict)?Equal/]`](
-    node
+    node,
   ) {
     const arg = node.parent.parent.parent.arguments;
     const isNull = arg.length > 0 && arg[0].value === null;
@@ -75,26 +69,23 @@ export const create = (context) => ({
         const lastFixer = isNull
           ? fixer.replaceText(
               node.parent.parent.parent.arguments[0],
-              sourceCode.getText(node.arguments[0])
+              sourceCode.getText(node.arguments[0]),
             )
           : fixer.insertTextBefore(
               node.parent.parent.parent.arguments[0],
-              `${sourceCode.getText(node.arguments[0])}, `
+              `${sourceCode.getText(node.arguments[0])}, `,
             );
 
         return [
           fixer.removeRange([node.callee.object.range[1], node.range[1]]),
-          fixer.replaceText(
-            node.parent.parent.property,
-            `${isNull ? "not." : ""}toHaveAttribute`
-          ),
+          fixer.replaceText(node.parent.parent.property, `${isNull ? "not." : ""}toHaveAttribute`),
           lastFixer,
         ];
       },
     });
   },
   [`CallExpression[callee.property.name='hasAttribute'][parent.callee.name='expect'][parent.parent.property.name=/toBeNull|toBeUndefined|toBeDefined/]`](
-    node
+    node,
   ) {
     context.report({
       node: node.parent.parent.property,
@@ -102,7 +93,7 @@ export const create = (context) => ({
     });
   },
   [`CallExpression[callee.property.name='getAttribute'][parent.callee.name='expect'][parent.parent.property.name=/toBeUndefined|toBeDefined/]`](
-    node
+    node,
   ) {
     context.report({
       node: node.parent.parent.property,
@@ -110,7 +101,7 @@ export const create = (context) => ({
     });
   },
   [`CallExpression[callee.property.name='hasAttribute'][parent.callee.name='expect'][parent.parent.property.name=/toBe$|to(Strict)?Equal/]`](
-    node
+    node,
   ) {
     if (typeof node.parent.parent.parent.arguments[0].value === "boolean") {
       context.report({
@@ -121,14 +112,12 @@ export const create = (context) => ({
           fixer.replaceText(
             node.parent.parent.property,
             `${
-              node.parent.parent.parent.arguments[0].value === false
-                ? "not."
-                : ""
-            }toHaveAttribute`
+              node.parent.parent.parent.arguments[0].value === false ? "not." : ""
+            }toHaveAttribute`,
           ),
           fixer.replaceText(
             node.parent.parent.parent.arguments[0],
-            getSourceCode(context).getText(node.arguments[0])
+            getSourceCode(context).getText(node.arguments[0]),
           ),
         ],
       });
@@ -140,7 +129,7 @@ export const create = (context) => ({
     }
   },
   [`CallExpression[callee.property.name='hasAttribute'][parent.callee.name='expect'][parent.parent.property.name=/toBeTruthy|toBeFalsy/]`](
-    node
+    node,
   ) {
     context.report({
       node: node.parent,
@@ -148,15 +137,10 @@ export const create = (context) => ({
       fix: (fixer) => [
         fixer.removeRange([node.callee.object.range[1], node.range[1]]),
         fixer.replaceTextRange(
-          [
-            node.parent.parent.property.range[0],
-            node.parent.parent.parent.range[1],
-          ],
+          [node.parent.parent.property.range[0], node.parent.parent.parent.range[1]],
           `${
             node.parent.parent.property.name === "toBeFalsy" ? "not." : ""
-          }toHaveAttribute(${context
-            .getSourceCode()
-            .getText(node.arguments[0])})`
+          }toHaveAttribute(${context.getSourceCode().getText(node.arguments[0])})`,
         ),
       ],
     });

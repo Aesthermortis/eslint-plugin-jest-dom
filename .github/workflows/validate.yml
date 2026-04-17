@@ -1,14 +1,7 @@
-name: validate
+name: CI
 on:
   push:
-    branches:
-      - "+([0-9])?(.{+([0-9]),x}).x"
-      - "main"
-      - "next"
-      - "next-major"
-      - "beta"
-      - "alpha"
-      - "!all-contributors/**"
+    branches: ["main"]
   pull_request:
 
 concurrency:
@@ -16,82 +9,25 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  main:
-    # ignore all-contributors PRs
-    if: ${{ !contains(github.head_ref, 'all-contributors') }}
-    strategy:
-      fail-fast: false
-      matrix:
-        eslint: [6, 7, 8, 9, 10]
-        node: [12.x, 14.x, 16.x, 18.x, 20.x, 21.x, 22.x, 24.x]
-        testing-library-dom: [8, 9, 10]
-        exclude:
-          - eslint: 9
-            node: 12.x
-          - eslint: 9
-            node: 14.x
-          - eslint: 9
-            node: 16.x
-          - eslint: 10
-            node: 12.x
-          - eslint: 10
-            node: 14.x
-          - eslint: 10
-            node: 16.x
-          - eslint: 10
-            node: 18.x
-          - eslint: 10
-            node: 21.x
-          - testing-library-dom: 9
-            node: 12.x
-          - testing-library-dom: 10
-            node: 12.x
-          - testing-library-dom: 10
-            node: 14.x
-          - testing-library-dom: 10
-            node: 16.x
+  validate:
     runs-on: ubuntu-latest
     steps:
-      - name: ⬇️ Checkout repo
+      - name: Checkout
         uses: actions/checkout@v6
 
-      - name: ⎔ Setup node
+      - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: ${{ matrix.node }}
+          cache: npm
+          node-version: 24
 
-      - name: 📥 Download deps
-        uses: bahmutov/npm-install@v1
-        with:
-          useLockFile: false
+      - name: Install dependencies
+        run: npm ci
 
-        # see https://github.com/npm/cli/issues/7349
-      - if: ${{ matrix.eslint >= 9 }}
-        run: npm un @typescript-eslint/parser
-
-      - name: Install ESLint v${{ matrix.eslint }}
-        run: npm install --no-save --force eslint@${{ matrix.eslint }}
-
-      - name: Install @testing-library/dom v${{ matrix.testing-library-dom }}
-        run: npm install --no-save --force @testing-library/dom@${{ matrix.testing-library-dom }}
-
-      - name: Install TypeScript v4
-        if: ${{ matrix.node == '12.x' }}
-        run: npm install --no-save --force typescript@4
-
-      - name: ▶️ Run validate script (without linting)
-        if: ${{ matrix.eslint != 8 }}
-        run: npm run validate -- build,test:coverage
-
-      - name: ▶️ Run validate script (with linting)
-        if: ${{ matrix.eslint == 8 && matrix.node != '12.x' }}
+      - name: Validate
         run: npm run validate
 
-      - name: ▶️ Ensure docs are up-to-date
-        if: ${{ matrix.eslint == 8 && matrix.node != '12.x' }}
-        run: npm run lint:generate-readme-table
-
-      - name: ⬆️ Upload coverage report
+      - name: Upload coverage report
         uses: codecov/codecov-action@v6
 
   release:
@@ -100,42 +36,32 @@ jobs:
       issues: write # to be able to comment on released issues
       pull-requests: write # to be able to comment on released pull requests
       id-token: write # to enable use of OIDC for trusted publishing and npm provenance
-    needs: main
+    needs: validate
     runs-on: ubuntu-latest
-    if: ${{ github.repository == 'testing-library/eslint-plugin-jest-dom' &&
-      contains('refs/heads/main,refs/heads/beta,refs/heads/next,refs/heads/alpha',
-      github.ref) && github.event_name == 'push' }}
+    if: ${{ github.repository == 'testing-library/eslint-plugin-jest-dom' && github.ref == 'refs/heads/main' && github.event_name == 'push' }}
     steps:
-      - name: ⬇️ Checkout repo
+      - name: Checkout
         uses: actions/checkout@v6
 
-      - name: ⎔ Setup node
+      - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
+          cache: npm
           node-version: 24
+          registry-url: "https://registry.npmjs.org"
 
-      - name: 📥 Download deps
-        uses: bahmutov/npm-install@v1
-        with:
-          useLockFile: false
+      - name: Install dependencies
+        run: npm ci
 
-      - name: 🏗 Run build script
+      - name: Build package
         run: npm run build
 
-      - run: ls -asl dist
-
-      - name: 🚀 Release
+      - name: Release
         uses: cycjimmy/semantic-release-action@v6
         with:
           semantic_version: 25
           branches: |
-            [
-              '+([0-9])?(.{+([0-9]),x}).x',
-              'main',
-              'next',
-              'next-major',
-              {name: 'beta', prerelease: true},
-              {name: 'alpha', prerelease: true}
-            ]
+            ["main"]
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_CONFIG_PROVENANCE: "true"

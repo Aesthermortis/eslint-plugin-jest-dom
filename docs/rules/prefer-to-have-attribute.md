@@ -1,4 +1,6 @@
-# Prefer toHaveAttribute over checking  getAttribute/hasAttribute  (`jest-dom/prefer-to-have-attribute`)
+# jest-dom/prefer-to-have-attribute
+
+📝 Prefer toHaveAttribute over checking  getAttribute/hasAttribute .
 
 💼 This rule is enabled in the ✅ `recommended` config.
 
@@ -22,9 +24,7 @@ Examples of **incorrect** code for this rule:
 expect(element.getAttribute("foo")).toMatch(/bar/);
 expect(element.getAttribute("foo")).toContain("bar");
 expect(getByText("thing").getAttribute("foo")).toBe("bar");
-expect(getByText("yes").getAttribute("data-blah")).toBe(
-  expect.stringMatching(/foo/)
-);
+expect(getByText("yes").getAttribute("data-blah")).toBe(expect.stringMatching(/foo/));
 expect(element.hasAttribute("foo")).toBeTruthy();
 ```
 

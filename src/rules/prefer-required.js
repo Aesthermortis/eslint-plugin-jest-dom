@@ -1,9 +1,9 @@
 /**
- * @fileoverview prefer toBeDisabled or toBeEnabled over attribute checks
- * @author Ben Monro
+ * @file Prefer ToBeDisabled or toBeEnabled over attribute checks.
+ * @author Ben Monro.
  */
 
-import createBannedAttributeRule from "../createBannedAttributeRule";
+import createBannedAttributeRule from "../createBannedAttributeRule.js";
 
 export const meta = {
   docs: {

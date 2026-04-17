@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": false,
+    "esModuleInterop": true,
+    "lib": ["ES2024"],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "noEmit": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "ES2024",
+    "types": ["node", "jest"],
+    "verbatimModuleSyntax": true
+  },
+  "include": ["index.d.ts", "src/**/*.js", "tests/**/*.js"],
+  "exclude": ["coverage", "dist", "node_modules"]
+}
