@@ -52,6 +52,8 @@
     "lint:fix": "npm run lint -- --fix",
     "lint:generate-readme-table": "npm run generate-readme-table -- --check",
     "lint:remote": "eslint-remote-tester --config smoke-test/eslint-remote-tester.config.js",
+    "prepack": "npm run build",
+    "prepare": "npm run build",
     "setup": "npm install && npm run validate",
     "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --config ./jest.config.js --runInBand",
     "test:coverage": "npm test -- --coverage",
