@@ -1,8 +1,16 @@
-import plugin, { configs, rules } from "../src/index.js";
+import plugin from "../src/index.js";
+
+const { configs, rules } = plugin;
 
 it("includes the configs and rules on the plugin", () => {
-  expect(plugin).toHaveProperty("configs", configs);
-  expect(plugin).toHaveProperty("rules", rules);
+  expect(plugin.configs).toBe(configs);
+  expect(plugin.rules).toBe(rules);
+});
+
+it("only exposes a default export from the root entrypoint", async () => {
+  const moduleExports = await import("../src/index.js");
+
+  expect(Object.keys(moduleExports)).toStrictEqual(["default"]);
 });
 
 it("includes the expected plugin metadata", () => {

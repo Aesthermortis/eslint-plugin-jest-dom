@@ -10,8 +10,6 @@ import rules from "./rules/index.js";
 const require = createRequire(import.meta.url);
 const { name: packageName, version: packageVersion } = require("../package.json");
 
-export { rules };
-
 const allRules = Object.fromEntries(
   Object.keys(rules).map((name) => [`jest-dom/${name}`, "error"]),
 );
@@ -42,4 +40,3 @@ Object.assign(plugin.configs, {
 });
 
 export default plugin;
-export const configs = plugin.configs;
