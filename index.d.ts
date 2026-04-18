@@ -3,6 +3,7 @@ import { type Linter, type Rule } from "eslint";
 export interface JestDomPlugin {
   meta: {
     name: string;
+    namespace: "jest-dom";
     version: string;
   };
   configs: {

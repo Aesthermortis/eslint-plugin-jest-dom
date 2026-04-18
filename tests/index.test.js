@@ -5,6 +5,14 @@ it("includes the configs and rules on the plugin", () => {
   expect(plugin).toHaveProperty("rules", rules);
 });
 
+it("includes the expected plugin metadata", () => {
+  expect(plugin.meta).toMatchObject({
+    name: "eslint-plugin-jest-dom",
+    namespace: "jest-dom",
+  });
+  expect(plugin.meta.version).not.toBe("");
+});
+
 it("should have all the rules", () => {
   expect(Object.keys(rules)).toHaveLength(11);
 });
@@ -17,6 +25,7 @@ it.each(Object.entries(rules))("%s should export required fields", (name, rule) 
 });
 
 it("has the expected recommended config", () => {
+  expect(configs.recommended.name).toBe("jest-dom/recommended");
   expect(configs.recommended.plugins["jest-dom"]).toBe(plugin);
   expect(configs.recommended.rules).toStrictEqual({
     "jest-dom/prefer-checked": "error",
@@ -34,6 +43,7 @@ it("has the expected recommended config", () => {
 });
 
 it("has the expected all config", () => {
+  expect(configs.all.name).toBe("jest-dom/all");
   expect(configs.all.plugins["jest-dom"]).toBe(plugin);
   expect(configs.all.rules).toStrictEqual(configs.recommended.rules);
 });

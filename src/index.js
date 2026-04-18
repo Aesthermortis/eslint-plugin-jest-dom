@@ -21,29 +21,25 @@ const recommendedRules = allRules;
 const plugin = {
   meta: {
     name: packageName,
+    namespace: "jest-dom",
     version: packageVersion,
   },
-  configs: {
-    recommended: {
-      plugins: ["jest-dom"],
-      rules: recommendedRules,
-    },
-    all: {
-      plugins: ["jest-dom"],
-      rules: allRules,
-    },
-  },
+  configs: {},
   rules,
 };
 
-plugin.configs.recommended = {
-  plugins: { "jest-dom": plugin },
-  rules: recommendedRules,
-};
-plugin.configs.all = {
-  plugins: { "jest-dom": plugin },
-  rules: allRules,
-};
+Object.assign(plugin.configs, {
+  recommended: {
+    name: "jest-dom/recommended",
+    plugins: { "jest-dom": plugin },
+    rules: recommendedRules,
+  },
+  all: {
+    name: "jest-dom/all",
+    plugins: { "jest-dom": plugin },
+    rules: allRules,
+  },
+});
 
 export default plugin;
 export const configs = plugin.configs;

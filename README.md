@@ -53,9 +53,10 @@ to detect the full set of Testing Library queries.
 Add `jest-dom` to your `eslint.config.js` file:
 
 ```javascript
-import * as jestDom from "eslint-plugin-jest-dom";
+import jestDom from "eslint-plugin-jest-dom";
+import { defineConfig } from "eslint/config";
 
-export default [
+export default defineConfig([
   {
     files: ["**/*.{test,spec}.{js,jsx,ts,tsx}"],
     plugins: {
@@ -65,15 +66,16 @@ export default [
       // your configuration
     },
   },
-];
+]);
 ```
 
 Then configure the rules you want to use under the rules section.
 
 ```javascript
-import * as jestDom from "eslint-plugin-jest-dom";
+import jestDom from "eslint-plugin-jest-dom";
+import { defineConfig } from "eslint/config";
 
-export default [
+export default defineConfig([
   {
     files: ["**/*.{test,spec}.{js,jsx,ts,tsx}"],
     plugins: {
@@ -86,7 +88,7 @@ export default [
       "jest-dom/prefer-to-have-attribute": "error",
     },
   },
-];
+]);
 ```
 
 ## Recommended Configuration
@@ -95,20 +97,41 @@ This plugin exports a recommended configuration that enforces good `jest-dom`
 practices _(you can find more info about enabled rules in
 [Supported Rules section](#supported-rules))_.
 
-To enable this configuration with `eslint.config.js`, use
-`jestDom.configs.recommended`:
+To enable this configuration with `eslint.config.js`, register the plugin and
+extend `jest-dom/recommended`:
 
 ```javascript
-import * as jestDom from "eslint-plugin-jest-dom";
+import jestDom from "eslint-plugin-jest-dom";
+import { defineConfig } from "eslint/config";
 
-export default [
+export default defineConfig([
   {
     files: [
       /* glob matching your test files */
     ],
-    ...jestDom.configs.recommended,
+    plugins: {
+      "jest-dom": jestDom,
+    },
+    extends: ["jest-dom/recommended"],
   },
-];
+]);
+```
+
+If you need direct access to the exported config object, it is also available as
+`jestDom.configs.recommended`:
+
+```javascript
+import jestDom from "eslint-plugin-jest-dom";
+import { defineConfig } from "eslint/config";
+
+export default defineConfig([
+  {
+    files: [
+      /* glob matching your test files */
+    ],
+    extends: [jestDom.configs.recommended],
+  },
+]);
 ```
 
 ## Supported Rules
