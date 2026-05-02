@@ -1,15 +1,12 @@
 import { type Linter, type Rule } from "eslint";
 
-declare const plugin: {
+declare const jestDom: {
   meta: {
-    name: string;
+    name: "eslint-plugin-jest-dom";
     namespace: "jest-dom";
     version: string;
   };
   configs: {
-    all: Linter.Config & {
-      name: "jest-dom/all";
-    };
     recommended: Linter.Config & {
       name: "jest-dom/recommended";
     };
@@ -17,5 +14,5 @@ declare const plugin: {
   rules: Record<string, Rule.RuleModule>;
 };
 
-export type JestDomPlugin = typeof plugin;
-export default plugin;
+export type JestDomPlugin = typeof jestDom;
+export default jestDom;

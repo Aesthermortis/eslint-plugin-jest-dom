@@ -1,6 +1,6 @@
 # jest-dom/prefer-to-have-attribute
 
-📝 Prefer toHaveAttribute over checking  getAttribute/hasAttribute .
+📝 Prefer toHaveAttribute over checking getAttribute/hasAttribute .
 
 💼 This rule is enabled in the ✅ `recommended` config.
 

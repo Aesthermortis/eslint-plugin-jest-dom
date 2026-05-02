@@ -1,20 +1,15 @@
 // @ts-check
 
-import { builtinModules } from "node:module";
-
-const externalIds = new Set([
-  "@testing-library/dom",
-  ...builtinModules,
-  ...builtinModules.map((moduleName) => `node:${moduleName}`),
-]);
+import { nodeResolve } from "@rollup/plugin-node-resolve";
 
 export default {
   input: "src/index.js",
   output: {
     file: "dist/index.js",
-    format: "esm",
+    format: "es",
+    importAttributesKey: "with",
     sourcemap: true,
   },
-  external: (id) => externalIds.has(id),
-  treeshake: true,
+  external: ["@testing-library/dom", "../package.json", "node:module"],
+  plugins: [nodeResolve()],
 };

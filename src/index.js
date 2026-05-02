@@ -1,41 +1,28 @@
-/**
- * @file Lint Rules for use with jest-dom.
- * @author Ben Monro.
- */
-
-import { createRequire } from "node:module";
-
+import packageJson from "../package.json" with { type: "json" };
+import recommendedRules from "./configs/recommended.js";
 import rules from "./rules/index.js";
 
-const require = createRequire(import.meta.url);
-const { name: packageName, version: packageVersion } = require("../package.json");
+const { name: packageName, version: packageVersion } = packageJson;
+const namespace = "jest-dom";
 
-const allRules = Object.fromEntries(
-  Object.keys(rules).map((name) => [`jest-dom/${name}`, "error"]),
-);
-
-const recommendedRules = allRules;
+/** @type {Record<string, import("eslint").Linter.Config>} */
+const configs = {};
 
 const plugin = {
   meta: {
     name: packageName,
-    namespace: "jest-dom",
+    namespace,
     version: packageVersion,
   },
-  configs: {},
+  configs,
   rules,
 };
 
 Object.assign(plugin.configs, {
   recommended: {
-    name: "jest-dom/recommended",
-    plugins: { "jest-dom": plugin },
+    name: `${namespace}/recommended`,
+    plugins: { [namespace]: plugin },
     rules: recommendedRules,
-  },
-  all: {
-    name: "jest-dom/all",
-    plugins: { "jest-dom": plugin },
-    rules: allRules,
   },
 });
 
