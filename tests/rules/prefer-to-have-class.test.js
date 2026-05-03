@@ -8,6 +8,8 @@ ruleTester.run("prefer-to-have-class", rule, {
     `expect().toBe(true)`,
     `const el = screen.getByText("foo"); expect(el).toHaveClass("bar")`,
     `const el = screen.getByText("foo"); expect(el.class).toEqual(foo)`,
+    `const el = screen.getByText("foo"); expect(el.classList.contains("foo")).toBe()`,
+    `const el = screen.getByText("foo"); expect(el.classList.contains("foo")).toEqual(value)`,
     `const el = screen.getByText("foo"); expect(el).toHaveAttribute("class")`,
     `const el = screen.getByText("foo"); expect(el).toHaveAttribute("className", "bar")`,
     `const el = screen.getByText("foo"); expect(el).toHaveAttribute("clazz", "bar")`,
@@ -206,6 +208,41 @@ ruleTester.run("prefer-to-have-class", rule, {
       code: `const el = screen.getByText("foo"); expect(el.classList.contains("foo")).toBeTruthy()`,
       errors,
       output: `const el = screen.getByText("foo"); expect(el).toHaveClass("foo")`,
+    },
+    {
+      code: `const el = screen.getByText("foo"); expect(el.classList.contains("foo")).toBeFalsy()`,
+      errors,
+      output: `const el = screen.getByText("foo"); expect(el).not.toHaveClass("foo")`,
+    },
+    {
+      code: `const el = screen.getByText("foo"); expect(el.classList.contains("foo")).toBeTrue()`,
+      errors,
+      output: `const el = screen.getByText("foo"); expect(el).toHaveClass("foo")`,
+    },
+    {
+      code: `const el = screen.getByText("foo"); expect(el.classList.contains("foo")).toBeFalse()`,
+      errors,
+      output: `const el = screen.getByText("foo"); expect(el).not.toHaveClass("foo")`,
+    },
+    {
+      code: `const el = screen.getByText("foo"); expect(el.classList.contains("foo")).toEqual(true)`,
+      errors,
+      output: `const el = screen.getByText("foo"); expect(el).toHaveClass("foo")`,
+    },
+    {
+      code: `const el = screen.getByText("foo"); expect(el.classList.contains("foo")).toEqual(false)`,
+      errors,
+      output: `const el = screen.getByText("foo"); expect(el).not.toHaveClass("foo")`,
+    },
+    {
+      code: `const el = screen.getByText("foo"); expect(el.classList.contains("foo")).toStrictEqual(true)`,
+      errors,
+      output: `const el = screen.getByText("foo"); expect(el).toHaveClass("foo")`,
+    },
+    {
+      code: `const el = screen.getByText("foo"); expect(el.classList.contains("foo")).toStrictEqual(false)`,
+      errors,
+      output: `const el = screen.getByText("foo"); expect(el).not.toHaveClass("foo")`,
     },
     {
       code: `const el = screen.getByText("foo"); expect(el.classList).not.toContain("bar")`,

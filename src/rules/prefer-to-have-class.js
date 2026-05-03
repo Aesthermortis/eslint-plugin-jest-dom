@@ -11,6 +11,33 @@ import { getSourceCode } from "../context.js";
 //------------------------------------------------------------------------------
 
 const messageId = "use-to-have-class";
+const truthyMatchers = new Set(["toBeTruthy", "toBeTrue"]);
+const falsyMatchers = new Set(["toBeFalsy", "toBeFalse"]);
+
+const getClassListContainsExpectation = (matcherName, matcherArg) => {
+  if (matcherName === "toBe" || matcherName === "toEqual" || matcherName === "toStrictEqual") {
+    if (matcherArg?.value === true) {
+      return true;
+    }
+
+    if (matcherArg?.value === false) {
+      return false;
+    }
+
+    return null;
+  }
+
+  if (truthyMatchers.has(matcherName)) {
+    return true;
+  }
+
+  if (falsyMatchers.has(matcherName)) {
+    return false;
+  }
+
+  return null;
+};
+
 export const meta = {
   docs: {
     category: "Best Practices",
@@ -26,7 +53,7 @@ export const meta = {
 
 export const create = (context) => ({
   //expect(el.classList.contains("foo")).toBe(true)
-  [`CallExpression[callee.object.callee.name=expect][callee.object.arguments.0.callee.object.property.name=classList][callee.object.arguments.0.callee.property.name=contains][callee.property.name=/toBe(Truthy|Falsy)?|to(Strict)?Equal/]`](
+  [`CallExpression[callee.object.callee.name=expect][callee.object.arguments.0.callee.object.property.name=classList][callee.object.arguments.0.callee.property.name=contains][callee.property.name=/^(toBe|toBeTruthy|toBeFalsy|toBeTrue|toBeFalse|toEqual|toStrictEqual)$/]`](
     node,
   ) {
     const classValue = node.callee.object.arguments[0].arguments[0];
@@ -34,8 +61,11 @@ export const create = (context) => ({
     const matcher = node.callee.property;
     const [matcherArg] = node.arguments;
     const [expectArg] = node.callee.object.arguments;
-    const isTruthy =
-      (matcher.name === "toBe" && matcherArg.value === true) || matcher.name === "toBeTruthy";
+    const isTruthy = getClassListContainsExpectation(matcher.name, matcherArg);
+
+    if (isTruthy === null) {
+      return;
+    }
 
     context.report({
       node: matcher,
