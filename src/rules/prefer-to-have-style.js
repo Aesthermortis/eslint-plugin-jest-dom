@@ -38,7 +38,7 @@ export const create = (context) => {
 
   return {
     //expect(el.style.foo).toBe("bar");
-    [`MemberExpression[property.name=style][parent.computed=false][parent.parent.parent.property.name=/toBe$|to(Strict)?Equal/][parent.parent.parent.parent.arguments.0.type=/(Template)?Literal/][parent.parent.callee.name=expect]`](
+    [`MemberExpression[property.name=style][parent.computed=false][parent.parent.parent.property.name=/toBe$|to(Strict)?Equal/][parent.parent.parent.parent.arguments.0.type=/^(TemplateLiteral|Literal|Identifier)$/][parent.parent.callee.name=expect]`](
       node,
     ) {
       const styleName = node.parent.property;
@@ -60,7 +60,7 @@ export const create = (context) => {
       });
     },
     //expect(el.style.foo).not.toBe("bar");
-    [`MemberExpression[property.name=style][parent.computed=false][parent.parent.parent.property.name=not][parent.parent.parent.parent.property.name=/toBe$|to(Strict)?Equal/][parent.parent.parent.parent.parent.arguments.0.type=/(Template)?Literal$/][parent.parent.callee.name=expect]`](
+    [`MemberExpression[property.name=style][parent.computed=false][parent.parent.parent.property.name=not][parent.parent.parent.parent.property.name=/toBe$|to(Strict)?Equal/][parent.parent.parent.parent.parent.arguments.0.type=/^(TemplateLiteral|Literal|Identifier)$/][parent.parent.callee.name=expect]`](
       node,
     ) {
       const styleName = node.parent.property;
@@ -147,7 +147,7 @@ export const create = (context) => {
     },
 
     //expect(el.style["foo-bar"]).toBe("baz")
-    [`MemberExpression[property.name=style][parent.computed=true][parent.parent.parent.property.name=/toBe$|to(Strict)?Equal/][parent.parent.parent.parent.arguments.0.type=/((Template)?Literal|Identifier)/][parent.parent.callee.name=expect]`](
+    [`MemberExpression[property.name=style][parent.computed=true][parent.parent.parent.property.name=/toBe$|to(Strict)?Equal/][parent.parent.parent.parent.arguments.0.type=/^(TemplateLiteral|Literal|Identifier)$/][parent.parent.callee.name=expect]`](
       node,
     ) {
       const styleName = node.parent.property;
@@ -161,7 +161,8 @@ export const create = (context) => {
       if (
         typeof styleValue.value !== "number" &&
         !(styleValue.value instanceof RegExp) &&
-        styleName.type !== "Identifier"
+        styleName.type !== "Identifier" &&
+        (styleValue.type !== "Identifier" || styleName.type === "Literal")
       ) {
         fix = (fixer) => {
           return [
@@ -184,7 +185,7 @@ export const create = (context) => {
       });
     },
     //expect(el.style["foo-bar"]).not.toBe("baz")
-    [`MemberExpression[property.name=style][parent.computed=true][parent.parent.parent.property.name=not][parent.parent.parent.parent.parent.callee.property.name=/toBe$|to(Strict)?Equal/][parent.parent.parent.parent.parent.arguments.0.type=/(Template)?Literal/][parent.parent.callee.name=expect]`](
+    [`MemberExpression[property.name=style][parent.computed=true][parent.parent.parent.property.name=not][parent.parent.parent.parent.parent.callee.property.name=/toBe$|to(Strict)?Equal/][parent.parent.parent.parent.parent.arguments.0.type=/^(TemplateLiteral|Literal)$/][parent.parent.callee.name=expect]`](
       node,
     ) {
       const styleName = node.parent.property;

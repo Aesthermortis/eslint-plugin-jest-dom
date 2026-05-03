@@ -45,9 +45,19 @@ ruleTester.run("prefer-to-have-style", rule, {
       output: `expect(el).toHaveStyle({foo:"bar"})`,
     },
     {
+      code: `const red = "red"; expect(el.style.color).toBe(red)`,
+      errors,
+      output: `const red = "red"; expect(el).toHaveStyle({color:red})`,
+    },
+    {
       code: `expect(el.style.foo).not.toBe("bar")`,
       errors,
       output: `expect(el).not.toHaveStyle({foo:"bar"})`,
+    },
+    {
+      code: `const red = "red"; expect(el.style.color).not.toBe(red)`,
+      errors,
+      output: `const red = "red"; expect(el).not.toHaveStyle({color:red})`,
     },
     {
       code: "expect(el.style.backgroundImage).toBe(`url(${foo})`)",
@@ -78,6 +88,11 @@ ruleTester.run("prefer-to-have-style", rule, {
       code: 'expect(el.style["scroll-snap-type"]).toBe(`${x} mandatory`)',
       errors,
       output: "expect(el).toHaveStyle({scrollSnapType: `${x} mandatory`})",
+    },
+    {
+      code: `const value = "x mandatory"; expect(el.style["scroll-snap-type"]).toBe(value)`,
+      errors,
+      output: `const value = "x mandatory"; expect(el).toHaveStyle({scrollSnapType: value})`,
     },
     {
       code: `expect(el.style["scroll-snap-type"]).not.toBe("x mandatory")`,
@@ -123,6 +138,11 @@ ruleTester.run("prefer-to-have-style", rule, {
       code: `expect(imageElement.style[\`box-\${shadow}\`]).toBe("inset 0px 0px 0px 400px 40px")`,
       errors,
       output: `expect(imageElement).toHaveStyle(\`box-\${shadow}: inset 0px 0px 0px 400px 40px\`)`,
+    },
+    {
+      code: `expect(imageElement.style[\`box-shadow\`]).toBe(value)`,
+      errors,
+      output: null,
     },
     {
       code: `expect(imageElement.style[\`box-shadow\`]).not.toBe(\`inset 0px 0px 0px 400px \${c}\`)`,
