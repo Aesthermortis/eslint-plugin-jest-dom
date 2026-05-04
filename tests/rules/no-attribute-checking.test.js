@@ -5,39 +5,42 @@
 
 import createBannedAttributeTestCases from "../fixtures/createBannedAttributeTestCases.js";
 import { FlatCompatRuleTester as RuleTester } from "../rule-tester.js";
-import rules from "../../src/rules/index.js";
+import * as preferChecked from "../../src/rules/prefer-checked.js";
+import * as preferEnabledDisabled from "../../src/rules/prefer-enabled-disabled.js";
+import * as preferRequired from "../../src/rules/prefer-required.js";
 
 const bannedAttributes = [
   {
     preferred: "toBeDisabled()",
     negatedPreferred: "toBeEnabled()",
     attributes: ["disabled"],
+    rule: preferEnabledDisabled,
     ruleName: "prefer-enabled-disabled",
   },
   {
     preferred: "toBeRequired()",
     negatedPreferred: "not.toBeRequired()",
     attributes: ["required", "aria-required"],
+    rule: preferRequired,
     ruleName: "prefer-required",
   },
   {
     preferred: "toBeChecked()",
     negatedPreferred: "not.toBeChecked()",
     attributes: ["checked", "aria-checked"],
+    rule: preferChecked,
     ruleName: "prefer-checked",
   },
 ];
 
-bannedAttributes.forEach(({ preferred, negatedPreferred, attributes, ruleName }) => {
-  const rule = rules[ruleName];
-
+for (const { preferred, negatedPreferred, attributes, rule, ruleName } of bannedAttributes) {
   // const preferred = 'toBeDisabled()';
   // const negatedPreferred = 'toBeEnabled()';
   // const attributes = ['disabled'];
   const ruleTester = new RuleTester({
     parserOptions: { ecmaVersion: 2015, sourceType: "module" },
   });
-  attributes.forEach((attribute) => {
+  for (const attribute of attributes) {
     ruleTester.run(
       ruleName,
       rule,
@@ -47,19 +50,19 @@ bannedAttributes.forEach(({ preferred, negatedPreferred, attributes, ruleName })
         attribute,
       }),
     );
-  });
-});
+  }
+}
 
 // Test that excludeValues ("mixed") are not flagged by prefer-checked
 const excludeValuesCases = [
   {
     ruleName: "prefer-checked",
+    rule: preferChecked,
     attribute: "aria-checked",
   },
 ];
 
-excludeValuesCases.forEach(({ ruleName, attribute }) => {
-  const rule = rules[ruleName];
+for (const { ruleName, rule, attribute } of excludeValuesCases) {
   const ruleTester = new RuleTester({
     parserOptions: { ecmaVersion: 2015, sourceType: "module" },
   });
@@ -74,4 +77,4 @@ excludeValuesCases.forEach(({ ruleName, attribute }) => {
     ],
     invalid: [],
   });
-});
+}
