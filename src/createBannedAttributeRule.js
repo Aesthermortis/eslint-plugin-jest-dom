@@ -1,14 +1,52 @@
 import { getQueryNodeFrom } from "./assignment-ast.js";
 
-export default ({ preferred, negatedPreferred, attributes, excludeValues = [] }) =>
-  (context) => {
-    const isExcludedValue = (node) =>
-      excludeValues.length > 0 &&
-      node.arguments.length >= 2 &&
-      node.arguments[1].type === "Literal" &&
-      typeof node.arguments[1].value === "string" &&
-      excludeValues.some((v) => v.toLowerCase() === node.arguments[1].value.toLowerCase());
+/**
+ * Checks whether an attribute matcher uses an excluded literal value.
+ *
+ * @param {object} node - Attribute matcher call node.
+ * @param {string[]} excludedValues - Lowercase values that should not be reported.
+ * @returns {boolean} Whether the matcher value is excluded.
+ */
+function isExcludedValue(node, excludedValues) {
+  return (
+    excludedValues.length > 0 &&
+    node.arguments.length >= 2 &&
+    node.arguments[1].type === "Literal" &&
+    typeof node.arguments[1].value === "string" &&
+    excludedValues.includes(node.arguments[1].value.toLowerCase())
+  );
+}
 
+/**
+ * Checks whether an attribute matcher targets a banned attribute.
+ *
+ * @param {object} node - Attribute matcher call node.
+ * @param {string[]} attributes - Attribute names banned by the rule.
+ * @returns {boolean} Whether the matcher targets a banned attribute.
+ */
+function isBannedArg(node, attributes) {
+  return node.arguments.length > 0 && attributes.includes(node.arguments[0].value);
+}
+
+/**
+ * Creates a rule listener for replacing banned attribute checks with jest-dom matchers.
+ *
+ * @param {object} ruleOptions - Banned attribute rule options.
+ * @param {string} ruleOptions.preferred - Preferred matcher name.
+ * @param {string} ruleOptions.negatedPreferred - Preferred matcher for negated assertions.
+ * @param {string[]} ruleOptions.attributes - Attribute names banned by the rule.
+ * @param {string[]} [ruleOptions.excludeValues] - Attribute values that should not be reported.
+ * @returns {function(object): object} Rule listener factory.
+ */
+export default function createBannedAttributeRule({
+  preferred,
+  negatedPreferred,
+  attributes,
+  excludeValues = [],
+}) {
+  const excludedValues = excludeValues.map((value) => value.toLowerCase());
+
+  return (context) => {
     const getCorrectFunctionFor = (node, negated = false) =>
       (node.arguments.length === 1 ||
         node.arguments[1].value === true ||
@@ -19,9 +57,6 @@ export default ({ preferred, negatedPreferred, attributes, excludeValues = [] })
       !negated
         ? preferred
         : negatedPreferred;
-
-    const isBannedArg = (node) =>
-      node.arguments.length && attributes.some((attr) => attr === node.arguments[0].value);
 
     //expect(el).not.toBeEnabled() => expect(el).toBeDisabled()
     return {
@@ -49,7 +84,7 @@ export default ({ preferred, negatedPreferred, attributes, excludeValues = [] })
       "CallExpression[callee.property.name=/toBe(Truthy|Falsy)?|toEqual/][callee.object.callee.name='expect']"(
         node,
       ) {
-        if (!node.callee.object.arguments.length) {
+        if (node.callee.object.arguments.length === 0) {
           return;
         }
 
@@ -57,12 +92,15 @@ export default ({ preferred, negatedPreferred, attributes, excludeValues = [] })
           arguments: [{ object, property, property: { name } = {} }],
         } = node.callee.object;
         const matcher = node.callee.property.name;
-        const matcherArg = node.arguments.length && node.arguments[0].value;
-        if (!attributes.some((attr) => attr === name)) {
+        const matcherArg = node.arguments.length > 0 && node.arguments[0].value;
+        if (!attributes.includes(name)) {
           return;
         }
         const { isDTLQuery } = getQueryNodeFrom(context, node.callee.object.arguments[0]);
-        if (!isDTLQuery) return;
+        if (!isDTLQuery) {
+          return;
+        }
+
         const isNegated =
           matcher.endsWith("Falsy") ||
           ((matcher === "toBe" || matcher === "toEqual") && matcherArg !== true);
@@ -82,11 +120,11 @@ export default ({ preferred, negatedPreferred, attributes, excludeValues = [] })
       "CallExpression[callee.property.name=/toHaveProperty|toHaveAttribute/][callee.object.property.name='not'][callee.object.object.callee.name='expect']"(
         node,
       ) {
-        if (!isBannedArg(node)) {
+        if (!isBannedArg(node, attributes)) {
           return;
         }
 
-        if (isExcludedValue(node)) {
+        if (isExcludedValue(node, excludedValues)) {
           return;
         }
 
@@ -107,17 +145,20 @@ export default ({ preferred, negatedPreferred, attributes, excludeValues = [] })
       "CallExpression[callee.object.callee.name='expect'][callee.property.name=/toHaveProperty|toHaveAttribute/]"(
         node,
       ) {
-        if (!isBannedArg(node)) {
+        if (!isBannedArg(node, attributes)) {
           return;
         }
 
-        if (isExcludedValue(node)) {
+        if (isExcludedValue(node, excludedValues)) {
           return;
         }
 
         const { isDTLQuery } = getQueryNodeFrom(context, node.callee.object.arguments[0]);
 
-        if (!isDTLQuery) return;
+        if (!isDTLQuery) {
+          return;
+        }
+
         const correctFunction = getCorrectFunctionFor(node);
 
         const incorrectFunction = node.callee.property.name;
@@ -148,3 +189,4 @@ export default ({ preferred, negatedPreferred, attributes, excludeValues = [] })
       },
     };
   };
+}
