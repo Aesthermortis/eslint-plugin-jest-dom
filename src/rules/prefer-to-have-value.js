@@ -25,12 +25,18 @@ export const meta = {
 const messageId = "use-to-have-value";
 
 export const create = (context) => {
+  /**
+   * Checks whether a node is a Testing Library role query that can produce a value assertion.
+   *
+   * @param {object} nodeWithValueProp - AST node to inspect.
+   * @returns {boolean} Whether the node is a supported value query.
+   */
   function isValidQueryNode(nodeWithValueProp) {
     const { query, queryArg, isDTLQuery } = getQueryNodeFrom(context, nodeWithValueProp);
     return (
       !!query &&
       isDTLQuery &&
-      !!query.match(/^(get|find|query)(All)?ByRole$/) &&
+      /^(?:get|find|query)(?:All)?ByRole$/.test(query) &&
       ["textbox", "dropdown"].includes(queryArg)
     );
   }
