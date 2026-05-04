@@ -8,7 +8,7 @@ describe("when @testing-library/dom is not available", () => {
       throw error;
     });
 
-    expect([...fallbackQueries].sort()).toStrictEqual([
+    expect([...fallbackQueries].toSorted()).toStrictEqual([
       "findAllByAltText",
       "findAllByDisplayValue",
       "findAllByLabelText",
@@ -63,7 +63,7 @@ describe("when @testing-library/dom is not available", () => {
 
 describe("when @testing-library/dom is available", () => {
   it("returns the queries from the library", () => {
-    expect([...queries].sort()).toStrictEqual([
+    expect([...queries].toSorted()).toStrictEqual([
       "findAllByAltText",
       "findAllByDisplayValue",
       "findAllByLabelText",
