@@ -1,4 +1,3 @@
-/* global describe, expect, it */
 import { getScope, getSourceCode } from "../src/context.js";
 
 describe("getSourceCode", () => {
