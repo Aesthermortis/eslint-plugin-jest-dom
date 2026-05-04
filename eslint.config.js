@@ -110,7 +110,7 @@ export default defineConfig([
 
   {
     name: "Tests",
-    files: ["__tests__/**/*.js"],
+    files: ["tests/**/*.js"],
     extends: [jest.configs["flat/recommended"], jest.configs["flat/style"]],
     languageOptions: {
       globals: {
