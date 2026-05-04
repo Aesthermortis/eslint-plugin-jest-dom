@@ -13,16 +13,21 @@ import { queries } from "./queries.js";
  */
 export function getInnerNodeFrom(context, node, expression) {
   switch (expression.type) {
-    case "Identifier":
+    case "Identifier": {
       return getAssignmentForIdentifier(context, node, expression.name);
-    case "TSAsExpression":
+    }
+    case "TSAsExpression": {
       return getInnerNodeFrom(context, node, expression.expression);
-    case "AwaitExpression":
+    }
+    case "AwaitExpression": {
       return getInnerNodeFrom(context, node, expression.argument);
-    case "MemberExpression":
+    }
+    case "MemberExpression": {
       return getInnerNodeFrom(context, node, expression.object);
-    default:
+    }
+    default: {
       return expression;
+    }
   }
 }
 
@@ -37,7 +42,10 @@ export function getInnerNodeFrom(context, node, expression) {
 export function getAssignmentForIdentifier(context, node, identifierName) {
   const variable = getScope(context, node).set.get(identifierName);
 
-  if (!variable) return;
+  if (!variable) {
+    return;
+  }
+
   const init = variable.defs[0].node.init;
 
   let assignmentNode;
@@ -47,7 +55,7 @@ export function getAssignmentForIdentifier(context, node, identifierName) {
   } else {
     // let foo;
     // foo = bar;
-    const assignmentRef = variable.references.reverse().find((ref) => !!ref.writeExpr);
+    const assignmentRef = variable.references.toReversed().find((ref) => !!ref.writeExpr);
     if (!assignmentRef) {
       return;
     }
