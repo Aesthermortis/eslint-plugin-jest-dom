@@ -15,6 +15,12 @@ export const meta = {
 };
 
 export const create = (context) => {
+  /**
+   * Checks whether an assertion argument is not an empty string, template, or null.
+   *
+   * @param {object} node - Assertion argument node to inspect.
+   * @returns {boolean} Whether the argument is non-empty.
+   */
   function isNonEmptyStringOrTemplateLiteral(node) {
     return !['""', "''", "``", "null"].includes(getSourceCode(context).getText(node));
   }
