@@ -3,6 +3,8 @@ import * as preferEmpty from "./prefer-empty.js";
 import * as preferEnabledDisabled from "./prefer-enabled-disabled.js";
 import * as preferFocus from "./prefer-focus.js";
 import * as preferInDocument from "./prefer-in-document.js";
+import * as preferPartiallyChecked from "./prefer-partially-checked.js";
+import * as preferPartiallyPressed from "./prefer-partially-pressed.js";
 import * as preferRequired from "./prefer-required.js";
 import * as preferToHaveAttribute from "./prefer-to-have-attribute.js";
 import * as preferToHaveClass from "./prefer-to-have-class.js";
@@ -16,6 +18,8 @@ const rules = {
   "prefer-enabled-disabled": preferEnabledDisabled,
   "prefer-focus": preferFocus,
   "prefer-in-document": preferInDocument,
+  "prefer-partially-checked": preferPartiallyChecked,
+  "prefer-partially-pressed": preferPartiallyPressed,
   "prefer-required": preferRequired,
   "prefer-to-have-attribute": preferToHaveAttribute,
   "prefer-to-have-class": preferToHaveClass,

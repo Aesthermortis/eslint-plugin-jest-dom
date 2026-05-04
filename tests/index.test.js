@@ -22,7 +22,7 @@ it("includes the expected plugin metadata", () => {
 });
 
 it("should have all the rules", () => {
-  expect(Object.keys(rules)).toHaveLength(11);
+  expect(Object.keys(rules)).toHaveLength(13);
 });
 
 it.each(Object.entries(rules))("%s should export required fields", (name, rule) => {
@@ -48,4 +48,14 @@ it("has the expected recommended config", () => {
     "jest-dom/prefer-to-have-text-content": "error",
     "jest-dom/prefer-to-have-value": "error",
   });
+});
+
+it("has the expected all config", () => {
+  expect(configs.all.name).toBe("jest-dom/all");
+  expect(configs.all.plugins["jest-dom"]).toBe(plugin);
+  expect(configs.all.rules).toStrictEqual(
+    Object.fromEntries(Object.keys(rules).map((ruleName) => [`jest-dom/${ruleName}`, "error"])),
+  );
+  expect(configs.all.rules).toHaveProperty("jest-dom/prefer-partially-checked", "error");
+  expect(configs.all.rules).toHaveProperty("jest-dom/prefer-partially-pressed", "error");
 });

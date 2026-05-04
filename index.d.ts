@@ -7,6 +7,9 @@ declare const jestDom: {
     version: string;
   };
   configs: {
+    all: Linter.Config & {
+      name: "jest-dom/all";
+    };
     recommended: Linter.Config & {
       name: "jest-dom/recommended";
     };
