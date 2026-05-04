@@ -1,4 +1,4 @@
-name: Quality checks
+name: Validate
 
 on:
   push:
@@ -6,6 +6,7 @@ on:
       - main
       - master
   pull_request:
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
