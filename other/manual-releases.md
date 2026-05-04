@@ -8,7 +8,7 @@ the following commit message based on your needs:
 
 **Major**
 
-```
+```txt
 fix(release): manually release a major version
 
 There was an issue with a major release, so this manual-releases.md
@@ -21,7 +21,7 @@ BREAKING CHANGE: <mention any relevant breaking changes (this is what triggers t
 
 **Minor**
 
-```
+```txt
 feat(release): manually release a minor version
 
 There was an issue with a minor release, so this manual-releases.md
@@ -32,7 +32,7 @@ Reference: #<the number of a relevant pull request, issue, or commit>
 
 **Patch**
 
-```
+```txt
 fix(release): manually release a patch version
 
 There was an issue with a patch release, so this manual-releases.md
