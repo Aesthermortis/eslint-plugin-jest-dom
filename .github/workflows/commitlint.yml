@@ -1,6 +1,12 @@
 name: commitlint
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -31,7 +37,7 @@ jobs:
           npx commitlint --version
 
       - name: Validate pushed commits with commitlint
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' && github.event.before != '0000000000000000000000000000000000000000'
         run: npx commitlint --from ${{ github.event.before }} --to ${{ github.sha }} --verbose
 
       - name: Validate PR commits with commitlint
