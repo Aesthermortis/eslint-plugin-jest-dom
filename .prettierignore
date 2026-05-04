@@ -5,3 +5,5 @@ dist
 eslint-remote-tester-results
 docs/rules
 README.md
+CHANGELOG.md
+./github/release-please/manifest.json
