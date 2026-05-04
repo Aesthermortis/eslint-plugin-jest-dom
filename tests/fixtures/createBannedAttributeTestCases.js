@@ -1,4 +1,13 @@
-export default ({ preferred, negatedPreferred, attribute }) => {
+/**
+ * Creates shared RuleTester cases for banned attribute matcher rules.
+ *
+ * @param {object} testCaseOptions - Banned attribute test case options.
+ * @param {string} testCaseOptions.preferred - Preferred matcher call source.
+ * @param {string} testCaseOptions.negatedPreferred - Negated matcher call source.
+ * @param {string} testCaseOptions.attribute - Attribute name under test.
+ * @returns {object} Shared valid and invalid RuleTester cases.
+ */
+export default function createBannedAttributeTestCases({ preferred, negatedPreferred, attribute }) {
   const doubleNegativeCases = negatedPreferred.startsWith("toBe")
     ? [
         {
@@ -229,4 +238,4 @@ export default ({ preferred, negatedPreferred, attribute }) => {
       },
     ],
   };
-};
+}
