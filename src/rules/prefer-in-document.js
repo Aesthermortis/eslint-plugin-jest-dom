@@ -26,6 +26,13 @@ export const meta = {
   hasSuggestions: true,
 };
 
+/**
+ * Checks whether a matcher asserts absence instead of presence.
+ *
+ * @param {object} matcherNode - Matcher property node.
+ * @param {object[]} matcherArguments - Arguments passed to the matcher.
+ * @returns {boolean} Whether the matcher asserts absence.
+ */
 function isAntonymMatcher(matcherNode, matcherArguments) {
   return (
     matcherNode.name === "toBeNull" ||
@@ -35,6 +42,13 @@ function isAntonymMatcher(matcherNode, matcherArguments) {
   );
 }
 
+/**
+ * Checks whether a matcher compares the received value with null.
+ *
+ * @param {object} matcherNode - Matcher property node.
+ * @param {object[]} matcherArguments - Arguments passed to the matcher.
+ * @returns {boolean} Whether the matcher compares against null.
+ */
 function usesToBeOrToEqualWithNull(matcherNode, matcherArguments) {
   return (
     (matcherNode.name === "toBe" || matcherNode.name === "toEqual") &&
@@ -42,6 +56,13 @@ function usesToBeOrToEqualWithNull(matcherNode, matcherArguments) {
   );
 }
 
+/**
+ * Checks whether a matcher asserts a zero length.
+ *
+ * @param {object} matcherNode - Matcher property node.
+ * @param {object[]} matcherArguments - Arguments passed to the matcher.
+ * @returns {boolean} Whether the matcher asserts zero length.
+ */
 function usesToHaveLengthZero(matcherNode, matcherArguments) {
   // matcherArguments.length === 0: toHaveLength() will cause jest matcher error
   // matcherArguments[0].value:     toHaveLength(0, ...) means zero length
@@ -75,6 +96,13 @@ function getDTLQueryIdentifierNode(callExpressionNode) {
 export const create = (context) => {
   const alternativeMatchers =
     /^(toHaveLength|toBeDefined|toBeNull|toBe|toEqual|toBeTruthy|toBeFalsy)$/;
+
+  /**
+   * Resolves a numeric length value from a literal or assigned identifier.
+   *
+   * @param {object[]} matcherArguments - Arguments passed to the matcher.
+   * @returns {unknown} Length value when it can be resolved.
+   */
   function getLengthValue(matcherArguments) {
     let lengthValue;
 
@@ -84,23 +112,36 @@ export const create = (context) => {
         matcherArguments[0],
         matcherArguments[0].name,
       );
-      if (!assignment) {
-        return;
+      if (assignment) {
+        lengthValue = assignment.value;
       }
-      lengthValue = assignment.value;
     } else if (matcherArguments[0].type === "Literal") {
       lengthValue = matcherArguments[0].value;
     }
 
     return lengthValue;
   }
+
+  /**
+   * Reports invalid existence assertions for Testing Library queries.
+   *
+   * @param {object} reportContext - Nodes and matcher state for the candidate assertion.
+   * @param {object | null} reportContext.queryNode - Query identifier node to inspect.
+   * @param {object} reportContext.matcherNode - Matcher property node.
+   * @param {object[]} reportContext.matcherArguments - Arguments passed to the matcher.
+   * @param {boolean} reportContext.negatedMatcher - Whether the assertion uses `.not`.
+   * @param {object | undefined} reportContext.expect - Expect call node for negated fixes.
+   * @returns {void}
+   */
   function check({ queryNode, matcherNode, matcherArguments, negatedMatcher, expect }) {
     if (matcherNode.parent.parent.type !== "CallExpression") {
       return;
     }
 
     // only report on dom nodes which we can resolve to RTL queries.
-    if (!queryNode || (!queryNode.name && !queryNode.property)) return;
+    if (!queryNode || (!queryNode.name && !queryNode.property)) {
+      return;
+    }
 
     // *By* query with .toHaveLength(0/1) matcher are considered violations
     //
@@ -146,7 +187,7 @@ export const create = (context) => {
               fix(fixer) {
                 // Remove any arguments in the matcher
                 return [
-                  ...Array.from(matcherArguments).map((argument) => fixer.remove(argument)),
+                  ...matcherArguments.map((argument) => fixer.remove(argument)),
                   fixer.replaceText(matcherNode, "toBeInTheDocument"),
                 ];
               },
@@ -157,10 +198,11 @@ export const create = (context) => {
     }
 
     // toBe() or toEqual() are only invalid with null
-    if (matcherNode.name === "toBe" || matcherNode.name === "toEqual") {
-      if (!matcherArguments.length || !usesToBeOrToEqualWithNull(matcherNode, matcherArguments)) {
-        return;
-      }
+    if (
+      (matcherNode.name === "toBe" || matcherNode.name === "toEqual") &&
+      (matcherArguments.length === 0 || !usesToBeOrToEqualWithNull(matcherNode, matcherArguments))
+    ) {
+      return;
     }
 
     const query = queryNode.name || queryNode.property.name;
@@ -174,7 +216,7 @@ export const create = (context) => {
           const operations = [];
 
           // Remove any arguments in the matcher
-          for (const argument of Array.from(matcherArguments)) {
+          for (const argument of matcherArguments) {
             const sourceCode = getSourceCode(context);
             const token = sourceCode.getTokenAfter(argument);
             if (token.value === "," && token.type === "Punctuator") {
@@ -218,7 +260,7 @@ export const create = (context) => {
     [`CallExpression[callee.object.object.callee.name='expect'][callee.object.property.name='not'][callee.property.name=${alternativeMatchers}], CallExpression[callee.object.callee.name='expect'][callee.object.property.name='not'][callee.object.arguments.0.argument.callee.name=${alternativeMatchers}]`](
       node,
     ) {
-      if (!node.callee.object.object.arguments.length) {
+      if (node.callee.object.object.arguments.length === 0) {
         return;
       }
 
