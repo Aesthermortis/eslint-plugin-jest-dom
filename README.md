@@ -6,31 +6,38 @@
 
 ---
 
-[![Build Status][build-badge]][build]
-[![MIT License][license-badge]][license]
-[![PRs Welcome][prs-badge]][prs]
-[![Code of Conduct][coc-badge]][coc]
+<p align="center">
+  <a href="https://github.com/Aesthermortis/eslint-plugin-jest-dom/actions/workflows/validate.yml">
+    <img
+      alt="Quality checks"
+      src="https://img.shields.io/github/actions/workflow/status/Aesthermortis/eslint-plugin-jest-dom/validate.yml?branch=main&label=Quality%20checks&logo=github&style=flat-square"
+    >
+  </a>
+  <a href="./LICENSE">
+    <img
+      alt="MIT License"
+      src="https://img.shields.io/badge/license-MIT-green.svg?style=flat-square"
+    >
+  </a>
+  <a href="https://github.com/prettier/prettier">
+    <img
+      alt="Prettier Code Style"
+      src="https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square"
+    >
+  </a>
+</p>
 
 ## Table of Contents
 
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-
-- [Table of Contents](#table-of-contents)
 - [Installation](#installation)
 - [Usage](#usage)
 - [Recommended Configuration](#recommended-configuration)
 - [Supported Rules](#supported-rules)
-- [Issues](#issues)
-  - [🐛 Bugs](#-bugs)
-  - [💡 Feature Requests](#-feature-requests)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Installation
 
-This module is distributed via [npm][npm] which is bundled with [node][node] and
-should be installed as one of your project's `devDependencies`:
+This fork can be installed with `npm` directly from GitHub as one of your
+project's `devDependencies`:
 
 ```bash
 npm i -D github:Aesthermortis/eslint-plugin-jest-dom
@@ -150,35 +157,3 @@ export default defineConfig([
 | [prefer-to-have-value](docs/rules/prefer-to-have-value.md)               | prefer toHaveValue over checking element.value                        | ✅  | 🔧  |     |
 
 <!-- end auto-generated rules list -->
-
-## Issues
-
-_Looking to contribute? Look for the [Good First Issue][good-first-issue]
-label._
-
-### 🐛 Bugs
-
-Please file an issue for bugs, missing documentation, or unexpected behavior.
-
-[**See Bugs**][bugs]
-
-### 💡 Feature Requests
-
-Please file an issue to suggest new features. Vote on feature requests by adding
-a 👍. This helps maintainers prioritize what to work on.
-
-[**See Feature Requests**][requests]
-
-[npm]: https://www.npmjs.com
-[node]: https://nodejs.org
-[build-badge]: https://img.shields.io/github/actions/workflow/status/Aesthermortis/eslint-plugin-jest-dom/validate.yml?logo=github&style=flat-square
-[build]: https://github.com/Aesthermortis/eslint-plugin-jest-dom/actions?query=workflow%3Avalidate
-[license-badge]: https://img.shields.io/npm/l/eslint-plugin-jest-dom.svg?style=flat-square
-[license]: https://github.com/Aesthermortis/eslint-plugin-jest-dom/blob/main/LICENSE
-[prs-badge]: https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square
-[prs]: http://makeapullrequest.com
-[coc-badge]: https://img.shields.io/badge/code%20of-conduct-ff69b4.svg?style=flat-square
-[coc]: https://github.com/Aesthermortis/eslint-plugin-jest-dom/blob/main/other/CODE_OF_CONDUCT.md
-[bugs]: https://github.com/Aesthermortis/eslint-plugin-jest-dom/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aopen+sort%3Acreated-desc+label%3Abug
-[requests]: https://github.com/Aesthermortis/eslint-plugin-jest-dom/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aopen+sort%3Areactions-%2B1-desc+label%3Aenhancement
-[good-first-issue]: https://github.com/Aesthermortis/eslint-plugin-jest-dom/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aopen+sort%3Areactions-%2B1-desc+label%3Aenhancement+label%3A%22good+first+issue%22
