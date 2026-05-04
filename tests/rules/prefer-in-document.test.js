@@ -16,6 +16,13 @@ import { FlatCompatRuleTester as RuleTester } from "../rule-tester.js";
 // Tests
 //------------------------------------------------------------------------------
 
+/**
+ * Creates an invalid test case for the default use-document report.
+ *
+ * @param {string} code - Source code that should be reported.
+ * @param {string} output - Expected autofix output.
+ * @returns {object} Invalid RuleTester case.
+ */
 function invalidCase(code, output) {
   return {
     code,
@@ -28,6 +35,15 @@ function invalidCase(code, output) {
   };
 }
 
+/**
+ * Creates an invalid test case that expects query and matcher suggestions.
+ *
+ * @param {string} code - Source code that should be reported.
+ * @param {object} messageData - Message interpolation data for the report.
+ * @param {string} replaceQueryOutput - Expected output for the query replacement.
+ * @param {string} replaceMatcherOutput - Expected output for the matcher replacement.
+ * @returns {object} Invalid RuleTester case with suggestions.
+ */
 function invalidCaseWithSuggestions(code, messageData, replaceQueryOutput, replaceMatcherOutput) {
   return {
     code,
@@ -552,6 +568,6 @@ const ruleTester = new RuleTester({
   parserOptions: { ecmaVersion: 2020, sourceType: "module" },
 });
 ruleTester.run("prefer-in-document", rule, {
-  valid: [].concat(...valid),
-  invalid: [].concat(...invalid),
+  valid: valid.flat(),
+  invalid: invalid.flat(),
 });
