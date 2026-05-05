@@ -162,6 +162,7 @@ export default defineConfig([
 | [prefer-to-have-accessible-error-message](docs/rules/prefer-to-have-accessible-error-message.md) | prefer toHaveAccessibleErrorMessage over checking aria-errormessage manually | 🌐    |     |     |
 | [prefer-to-have-attribute](docs/rules/prefer-to-have-attribute.md)                               | prefer toHaveAttribute over checking getAttribute/hasAttribute               | 🌐 ✅ | 🔧  |     |
 | [prefer-to-have-class](docs/rules/prefer-to-have-class.md)                                       | prefer toHaveClass over checking element className                           | 🌐 ✅ | 🔧  |     |
+| [prefer-to-have-display-value](docs/rules/prefer-to-have-display-value.md)                       | prefer toHaveDisplayValue over manual value assertions                       | 🌐    |     |     |
 | [prefer-to-have-role](docs/rules/prefer-to-have-role.md)                                         | prefer toHaveRole over checking role attributes manually                     | 🌐    |     |     |
 | [prefer-to-have-selection](docs/rules/prefer-to-have-selection.md)                               | prefer toHaveSelection over checking selection manually                      | 🌐    |     |     |
 | [prefer-to-have-style](docs/rules/prefer-to-have-style.md)                                       | prefer toHaveStyle over checking element style                               | 🌐 ✅ | 🔧  |     |

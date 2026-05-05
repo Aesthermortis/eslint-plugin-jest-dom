@@ -15,6 +15,7 @@ import * as preferToAppearBefore from "./prefer-to-appear-before.js";
 import * as preferToHaveAccessibleErrorMessage from "./prefer-to-have-accessible-error-message.js";
 import * as preferToHaveAttribute from "./prefer-to-have-attribute.js";
 import * as preferToHaveClass from "./prefer-to-have-class.js";
+import * as preferToHaveDisplayValue from "./prefer-to-have-display-value.js";
 import * as preferToHaveRole from "./prefer-to-have-role.js";
 import * as preferToHaveSelection from "./prefer-to-have-selection.js";
 import * as preferToHaveStyle from "./prefer-to-have-style.js";
@@ -39,6 +40,7 @@ const rules = {
   "prefer-to-have-accessible-error-message": preferToHaveAccessibleErrorMessage,
   "prefer-to-have-attribute": preferToHaveAttribute,
   "prefer-to-have-class": preferToHaveClass,
+  "prefer-to-have-display-value": preferToHaveDisplayValue,
   "prefer-to-have-role": preferToHaveRole,
   "prefer-to-have-selection": preferToHaveSelection,
   "prefer-to-have-style": preferToHaveStyle,
