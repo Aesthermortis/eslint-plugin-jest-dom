@@ -156,6 +156,7 @@ export default defineConfig([
 | [prefer-required](docs/rules/prefer-required.md)                         | prefer toBeRequired over checking properties                          | 🌐 ✅ | 🔧  |     |
 | [prefer-to-have-attribute](docs/rules/prefer-to-have-attribute.md)       | prefer toHaveAttribute over checking getAttribute/hasAttribute        | 🌐 ✅ | 🔧  |     |
 | [prefer-to-have-class](docs/rules/prefer-to-have-class.md)               | prefer toHaveClass over checking element className                    | 🌐 ✅ | 🔧  |     |
+| [prefer-to-have-selection](docs/rules/prefer-to-have-selection.md)       | prefer toHaveSelection over checking selection manually               | 🌐    |     |     |
 | [prefer-to-have-style](docs/rules/prefer-to-have-style.md)               | prefer toHaveStyle over checking element style                        | 🌐 ✅ | 🔧  |     |
 | [prefer-to-have-text-content](docs/rules/prefer-to-have-text-content.md) | Prefer toHaveTextContent over checking element.textContent            | 🌐 ✅ | 🔧  |     |
 | [prefer-to-have-value](docs/rules/prefer-to-have-value.md)               | prefer toHaveValue over checking element.value                        | 🌐 ✅ | 🔧  |     |

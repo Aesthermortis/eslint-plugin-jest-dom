@@ -9,6 +9,7 @@ import * as preferPressed from "./prefer-pressed.js";
 import * as preferRequired from "./prefer-required.js";
 import * as preferToHaveAttribute from "./prefer-to-have-attribute.js";
 import * as preferToHaveClass from "./prefer-to-have-class.js";
+import * as preferToHaveSelection from "./prefer-to-have-selection.js";
 import * as preferToHaveStyle from "./prefer-to-have-style.js";
 import * as preferToHaveTextContent from "./prefer-to-have-text-content.js";
 import * as preferToHaveValue from "./prefer-to-have-value.js";
@@ -25,6 +26,7 @@ const rules = {
   "prefer-required": preferRequired,
   "prefer-to-have-attribute": preferToHaveAttribute,
   "prefer-to-have-class": preferToHaveClass,
+  "prefer-to-have-selection": preferToHaveSelection,
   "prefer-to-have-style": preferToHaveStyle,
   "prefer-to-have-text-content": preferToHaveTextContent,
   "prefer-to-have-value": preferToHaveValue,
