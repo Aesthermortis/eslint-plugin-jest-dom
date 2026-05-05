@@ -22,7 +22,7 @@ it("includes the expected plugin metadata", () => {
 });
 
 it("should have all the rules", () => {
-  expect(Object.keys(rules)).toHaveLength(16);
+  expect(Object.keys(rules)).toHaveLength(17);
 });
 
 it.each(Object.entries(rules))("%s should export required fields", (name, rule) => {
@@ -59,6 +59,10 @@ it("has the expected all config", () => {
   expect(configs.all.rules).toHaveProperty("jest-dom/prefer-partially-checked", "error");
   expect(configs.all.rules).toHaveProperty("jest-dom/prefer-partially-pressed", "error");
   expect(configs.all.rules).toHaveProperty("jest-dom/prefer-pressed", "error");
+  expect(configs.all.rules).toHaveProperty(
+    "jest-dom/prefer-to-have-accessible-error-message",
+    "error",
+  );
   expect(configs.all.rules).toHaveProperty("jest-dom/prefer-to-have-role", "error");
   expect(configs.all.rules).toHaveProperty("jest-dom/prefer-to-have-selection", "error");
 });

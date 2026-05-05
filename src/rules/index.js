@@ -7,6 +7,7 @@ import * as preferPartiallyChecked from "./prefer-partially-checked.js";
 import * as preferPartiallyPressed from "./prefer-partially-pressed.js";
 import * as preferPressed from "./prefer-pressed.js";
 import * as preferRequired from "./prefer-required.js";
+import * as preferToHaveAccessibleErrorMessage from "./prefer-to-have-accessible-error-message.js";
 import * as preferToHaveAttribute from "./prefer-to-have-attribute.js";
 import * as preferToHaveClass from "./prefer-to-have-class.js";
 import * as preferToHaveRole from "./prefer-to-have-role.js";
@@ -25,6 +26,7 @@ const rules = {
   "prefer-partially-pressed": preferPartiallyPressed,
   "prefer-pressed": preferPressed,
   "prefer-required": preferRequired,
+  "prefer-to-have-accessible-error-message": preferToHaveAccessibleErrorMessage,
   "prefer-to-have-attribute": preferToHaveAttribute,
   "prefer-to-have-class": preferToHaveClass,
   "prefer-to-have-role": preferToHaveRole,
