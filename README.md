@@ -159,7 +159,9 @@ export default defineConfig([
 | [prefer-to-be-invalid](docs/rules/prefer-to-be-invalid.md)                                       | prefer toBeInvalid over manual validity assertions                           | 🌐    |     |     |
 | [prefer-to-be-valid](docs/rules/prefer-to-be-valid.md)                                           | prefer toBeValid over manual validity assertions                             | 🌐    |     |     |
 | [prefer-to-contain-element](docs/rules/prefer-to-contain-element.md)                             | prefer toContainElement over manual contains assertions                      | 🌐    |     |     |
+| [prefer-to-have-accessible-description](docs/rules/prefer-to-have-accessible-description.md)     | prefer toHaveAccessibleDescription over checking aria-description manually   | 🌐    |     |     |
 | [prefer-to-have-accessible-error-message](docs/rules/prefer-to-have-accessible-error-message.md) | prefer toHaveAccessibleErrorMessage over checking aria-errormessage manually | 🌐    |     |     |
+| [prefer-to-have-accessible-name](docs/rules/prefer-to-have-accessible-name.md)                   | prefer toHaveAccessibleName over checking aria-label manually                | 🌐    |     |     |
 | [prefer-to-have-attribute](docs/rules/prefer-to-have-attribute.md)                               | prefer toHaveAttribute over checking getAttribute/hasAttribute               | 🌐 ✅ | 🔧  |     |
 | [prefer-to-have-class](docs/rules/prefer-to-have-class.md)                                       | prefer toHaveClass over checking element className                           | 🌐 ✅ | 🔧  |     |
 | [prefer-to-have-display-value](docs/rules/prefer-to-have-display-value.md)                       | prefer toHaveDisplayValue over manual value assertions                       | 🌐    |     |     |

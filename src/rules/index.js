@@ -12,7 +12,9 @@ import * as preferToBeValid from "./prefer-to-be-valid.js";
 import * as preferToContainElement from "./prefer-to-contain-element.js";
 import * as preferToAppearAfter from "./prefer-to-appear-after.js";
 import * as preferToAppearBefore from "./prefer-to-appear-before.js";
+import * as preferToHaveAccessibleDescription from "./prefer-to-have-accessible-description.js";
 import * as preferToHaveAccessibleErrorMessage from "./prefer-to-have-accessible-error-message.js";
+import * as preferToHaveAccessibleName from "./prefer-to-have-accessible-name.js";
 import * as preferToHaveAttribute from "./prefer-to-have-attribute.js";
 import * as preferToHaveClass from "./prefer-to-have-class.js";
 import * as preferToHaveDisplayValue from "./prefer-to-have-display-value.js";
@@ -37,7 +39,9 @@ const rules = {
   "prefer-to-contain-element": preferToContainElement,
   "prefer-to-appear-after": preferToAppearAfter,
   "prefer-to-appear-before": preferToAppearBefore,
+  "prefer-to-have-accessible-description": preferToHaveAccessibleDescription,
   "prefer-to-have-accessible-error-message": preferToHaveAccessibleErrorMessage,
+  "prefer-to-have-accessible-name": preferToHaveAccessibleName,
   "prefer-to-have-attribute": preferToHaveAttribute,
   "prefer-to-have-class": preferToHaveClass,
   "prefer-to-have-display-value": preferToHaveDisplayValue,
