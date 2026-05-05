@@ -158,6 +158,7 @@ export default defineConfig([
 | [prefer-to-appear-before](docs/rules/prefer-to-appear-before.md)                                 | prefer toAppearBefore over manual DOM order assertions                       | 🌐    |     |     |
 | [prefer-to-be-invalid](docs/rules/prefer-to-be-invalid.md)                                       | prefer toBeInvalid over manual validity assertions                           | 🌐    |     |     |
 | [prefer-to-be-valid](docs/rules/prefer-to-be-valid.md)                                           | prefer toBeValid over manual validity assertions                             | 🌐    |     |     |
+| [prefer-to-contain-element](docs/rules/prefer-to-contain-element.md)                             | prefer toContainElement over manual contains assertions                      | 🌐    |     |     |
 | [prefer-to-have-accessible-error-message](docs/rules/prefer-to-have-accessible-error-message.md) | prefer toHaveAccessibleErrorMessage over checking aria-errormessage manually | 🌐    |     |     |
 | [prefer-to-have-attribute](docs/rules/prefer-to-have-attribute.md)                               | prefer toHaveAttribute over checking getAttribute/hasAttribute               | 🌐 ✅ | 🔧  |     |
 | [prefer-to-have-class](docs/rules/prefer-to-have-class.md)                                       | prefer toHaveClass over checking element className                           | 🌐 ✅ | 🔧  |     |

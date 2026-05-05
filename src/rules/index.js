@@ -9,6 +9,7 @@ import * as preferPressed from "./prefer-pressed.js";
 import * as preferRequired from "./prefer-required.js";
 import * as preferToBeInvalid from "./prefer-to-be-invalid.js";
 import * as preferToBeValid from "./prefer-to-be-valid.js";
+import * as preferToContainElement from "./prefer-to-contain-element.js";
 import * as preferToAppearAfter from "./prefer-to-appear-after.js";
 import * as preferToAppearBefore from "./prefer-to-appear-before.js";
 import * as preferToHaveAccessibleErrorMessage from "./prefer-to-have-accessible-error-message.js";
@@ -32,6 +33,7 @@ const rules = {
   "prefer-required": preferRequired,
   "prefer-to-be-invalid": preferToBeInvalid,
   "prefer-to-be-valid": preferToBeValid,
+  "prefer-to-contain-element": preferToContainElement,
   "prefer-to-appear-after": preferToAppearAfter,
   "prefer-to-appear-before": preferToAppearBefore,
   "prefer-to-have-accessible-error-message": preferToHaveAccessibleErrorMessage,
