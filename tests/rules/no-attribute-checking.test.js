@@ -4,7 +4,7 @@
  */
 
 import createBannedAttributeTestCases from "../helpers/createBannedAttributeTestCases.js";
-import { FlatCompatRuleTester as RuleTester } from "../rule-tester.js";
+import { RuleTester } from "eslint";
 import * as preferChecked from "../../src/rules/prefer-checked.js";
 import * as preferEnabledDisabled from "../../src/rules/prefer-enabled-disabled.js";
 import * as preferRequired from "../../src/rules/prefer-required.js";
@@ -38,7 +38,7 @@ for (const { preferred, negatedPreferred, attributes, rule, ruleName } of banned
   // const negatedPreferred = 'toBeEnabled()';
   // const attributes = ['disabled'];
   const ruleTester = new RuleTester({
-    parserOptions: { ecmaVersion: 2015, sourceType: "module" },
+    languageOptions: { ecmaVersion: 2015, sourceType: "module" },
   });
   for (const attribute of attributes) {
     ruleTester.run(
@@ -64,7 +64,7 @@ const excludeValuesCases = [
 
 for (const { ruleName, rule, attribute } of excludeValuesCases) {
   const ruleTester = new RuleTester({
-    parserOptions: { ecmaVersion: 2015, sourceType: "module" },
+    languageOptions: { ecmaVersion: 2015, sourceType: "module" },
   });
   ruleTester.run(`${ruleName} (excludeValues: mixed)`, rule, {
     valid: [

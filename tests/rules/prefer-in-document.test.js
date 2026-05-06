@@ -10,7 +10,7 @@
 import parser from "@typescript-eslint/parser";
 
 import * as rule from "../../src/rules/prefer-in-document.js";
-import { FlatCompatRuleTester as RuleTester } from "../rule-tester.js";
+import { RuleTester } from "eslint";
 
 //------------------------------------------------------------------------------
 // Tests
@@ -564,8 +564,7 @@ const invalid = [
 ];
 
 const ruleTester = new RuleTester({
-  parser,
-  parserOptions: { ecmaVersion: 2020, sourceType: "module" },
+  languageOptions: { parser, ecmaVersion: 2020, sourceType: "module" },
 });
 ruleTester.run("prefer-in-document", rule, {
   valid: valid.flat(),

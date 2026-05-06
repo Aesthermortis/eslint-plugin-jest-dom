@@ -1,8 +1,8 @@
-import { FlatCompatRuleTester as RuleTester } from "../rule-tester.js";
+import { RuleTester } from "eslint";
 import * as rule from "../../src/rules/prefer-to-contain-element.js";
 
 const ruleTester = new RuleTester({
-  parserOptions: { ecmaVersion: 2015, sourceType: "module" },
+  languageOptions: { ecmaVersion: 2015, sourceType: "module" },
 });
 
 const error = {

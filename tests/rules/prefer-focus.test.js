@@ -3,7 +3,7 @@
  * @author Ben Monro.
  */
 
-import { FlatCompatRuleTester as RuleTester } from "../rule-tester.js";
+import { RuleTester } from "eslint";
 import * as rule from "../../src/rules/prefer-focus.js";
 
 const ruleTester = new RuleTester();

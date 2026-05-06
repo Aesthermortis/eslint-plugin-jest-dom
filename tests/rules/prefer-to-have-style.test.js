@@ -1,8 +1,8 @@
-import { FlatCompatRuleTester as RuleTester } from "../rule-tester.js";
+import { RuleTester } from "eslint";
 import * as rule from "../../src/rules/prefer-to-have-style.js";
 
 const errors = [{ message: "Use toHaveStyle instead of asserting on element style" }];
-const ruleTester = new RuleTester({ parserOptions: { ecmaVersion: 2015 } });
+const ruleTester = new RuleTester({ languageOptions: { ecmaVersion: 2015 } });
 ruleTester.run("prefer-to-have-style", rule, {
   valid: [
     `expect().toBe(true)`,

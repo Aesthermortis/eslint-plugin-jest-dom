@@ -1,8 +1,8 @@
-import { FlatCompatRuleTester as RuleTester } from "../rule-tester.js";
+import { RuleTester } from "eslint";
 import * as rule from "../../src/rules/prefer-to-have-class.js";
 
 const errors = [{ messageId: "use-to-have-class" }];
-const ruleTester = new RuleTester({ parserOptions: { ecmaVersion: 2015 } });
+const ruleTester = new RuleTester({ languageOptions: { ecmaVersion: 2015 } });
 ruleTester.run("prefer-to-have-class", rule, {
   valid: [
     `expect().toBe(true)`,
@@ -25,21 +25,21 @@ ruleTester.run("prefer-to-have-class", rule, {
     `const { result } = renderHook(() =>
         useMyHook({
           classes,
-        })  
+        })
     );
 
     expect(result.current.className).toBe("foo");`,
     `const { result } = renderHook(() =>
         useMyHook({
           classes,
-        })  
+        })
     );
 
     expect(result.current.className).toEqual(expect.stringContaining("foo"));`,
     `const { result } = renderHook(() =>
         useMyHook({
           classes,
-        })  
+        })
     );
 
     expect(result.current.className).not.toBe("foo");`,
