@@ -3,7 +3,7 @@
  * @author Ben Monro.
  */
 
-import createBannedAttributeTestCases from "../fixtures/createBannedAttributeTestCases.js";
+import createBannedAttributeTestCases from "../helpers/createBannedAttributeTestCases.js";
 import { FlatCompatRuleTester as RuleTester } from "../rule-tester.js";
 import * as preferChecked from "../../src/rules/prefer-checked.js";
 import * as preferEnabledDisabled from "../../src/rules/prefer-enabled-disabled.js";
