@@ -42,7 +42,7 @@ export const create = (context) => {
    */
   function getReplacementStyleParam(styleName, styleValue) {
     if (styleName.type === "Literal") {
-      return `{${camelCase(styleName.value)}: ${context.getSourceCode().getText(styleValue)}}`;
+      return `{${camelCase(styleName.value)}: ${getSourceCode(context).getText(styleValue)}}`;
     }
 
     const styleNameText = getSourceCode(context).getText(styleName).slice(0, -1);
@@ -71,7 +71,7 @@ export const create = (context) => {
             fixer.replaceText(matcher, "toHaveStyle"),
             fixer.replaceText(
               styleValue,
-              `{${styleName.name}:${context.getSourceCode().getText(styleValue)}}`,
+              `{${styleName.name}:${getSourceCode(context).getText(styleValue)}}`,
             ),
           ];
         },
@@ -93,7 +93,7 @@ export const create = (context) => {
             fixer.replaceText(matcher, "toHaveStyle"),
             fixer.replaceText(
               styleValue,
-              `{${styleName.name}:${context.getSourceCode().getText(styleValue)}}`,
+              `{${styleName.name}:${getSourceCode(context).getText(styleValue)}}`,
             ),
           ];
         },
@@ -248,9 +248,9 @@ export const create = (context) => {
             fixer.replaceText(matcher, "toHaveStyle"),
             fixer.replaceTextRange(
               [styleName.range[0], styleValue.range[1]],
-              `{${getReplacementObjectProperty(styleName)}: ${context
-                .getSourceCode()
-                .getText(styleValue)}}`,
+              `{${getReplacementObjectProperty(styleName)}: ${getSourceCode(context).getText(
+                styleValue,
+              )}}`,
             ),
           ];
         },
@@ -276,9 +276,9 @@ export const create = (context) => {
             fixer.replaceText(matcher, "toHaveStyle"),
             fixer.replaceTextRange(
               [styleName.range[0], styleValue.range[1]],
-              `{${getReplacementObjectProperty(styleName)}: ${context
-                .getSourceCode()
-                .getText(styleValue)}}`,
+              `{${getReplacementObjectProperty(styleName)}: ${getSourceCode(context).getText(
+                styleValue,
+              )}}`,
             ),
           ];
         },

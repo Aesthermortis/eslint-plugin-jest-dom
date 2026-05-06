@@ -1,30 +1,20 @@
 /**
- * Gets the source code object from the current ESLint context API or its legacy method.
+ * Gets the source code object from the ESLint context.
  *
  * @param {object} context - Context for a rule.
- * @returns {object | undefined} Source code for the current file, when available.
+ * @returns {object} Source code for the current file.
  */
 export function getSourceCode(context) {
-  if (context.sourceCode) {
-    return context.sourceCode;
-  }
-
-  return context.getSourceCode?.();
+  return context.sourceCode;
 }
 
 /**
- * Gets the scope for a node from the current ESLint source code API or the legacy context method.
+ * Gets the scope for a node from the ESLint source code API.
  *
  * @param {object} context - Context for a rule.
  * @param {object} node - Node to get the scope for.
- * @returns {object | undefined} Scope for the node, when available.
+ * @returns {object} Scope for the node.
  */
 export function getScope(context, node) {
-  const sourceCode = getSourceCode(context);
-
-  if (sourceCode && sourceCode.getScope) {
-    return sourceCode.getScope(node);
-  }
-
-  return context.getScope?.(node);
+  return context.sourceCode.getScope(node);
 }

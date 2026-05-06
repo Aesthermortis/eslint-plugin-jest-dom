@@ -231,7 +231,7 @@ export const create = (context) => ({
     const matcher = node.callee.property;
     const [classArg, classValueArg] = node.arguments;
 
-    const classNameValue = context.getSourceCode().getText(classArg).slice(1, -1);
+    const classNameValue = getSourceCode(context).getText(classArg).slice(1, -1);
     if (
       (matcher.name === "toHaveAttribute" && classNameValue !== "class") ||
       (matcher.name === "toHaveProperty" && classNameValue !== "className")
@@ -263,7 +263,7 @@ export const create = (context) => ({
     //[callee.object.property.name=/toHaveAttribute|toHaveProperty/][arguments.0.value=class][arguments.1.type=/Literal$/]
     const matcher = node.callee.property;
     const [classArg, classValueArg] = node.arguments;
-    const classNameValue = context.getSourceCode().getText(classArg).slice(1, -1);
+    const classNameValue = getSourceCode(context).getText(classArg).slice(1, -1);
     if (
       (matcher.name === "toHaveAttribute" && classNameValue !== "class") ||
       (matcher.name === "toHaveProperty" && classNameValue !== "className")
@@ -296,7 +296,7 @@ export const create = (context) => ({
     const [classArg, classValue] = node.arguments;
     const classValueArg = classValue.arguments[0];
 
-    const classNameValue = context.getSourceCode().getText(classArg).slice(1, -1);
+    const classNameValue = getSourceCode(context).getText(classArg).slice(1, -1);
     if (
       (matcher.name === "toHaveAttribute" && classNameValue !== "class") ||
       (matcher.name === "toHaveProperty" && classNameValue !== "className")

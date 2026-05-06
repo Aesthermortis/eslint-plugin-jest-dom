@@ -29,7 +29,7 @@ export const create = (context) => ({
         fixer.removeRange([node.callee.object.range[1], node.range[1]]),
         fixer.replaceTextRange(
           [node.parent.parent.property.range[0], node.parent.parent.parent.range[1]],
-          `not.toHaveAttribute(${context.getSourceCode().getText(node.arguments[0])})`,
+          `not.toHaveAttribute(${getSourceCode(context).getText(node.arguments[0])})`,
         ),
       ],
     });
@@ -140,7 +140,7 @@ export const create = (context) => ({
           [node.parent.parent.property.range[0], node.parent.parent.parent.range[1]],
           `${
             node.parent.parent.property.name === "toBeFalsy" ? "not." : ""
-          }toHaveAttribute(${context.getSourceCode().getText(node.arguments[0])})`,
+          }toHaveAttribute(${getSourceCode(context).getText(node.arguments[0])})`,
         ),
       ],
     });

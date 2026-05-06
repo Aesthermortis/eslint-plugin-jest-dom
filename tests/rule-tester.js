@@ -64,25 +64,13 @@ function applyParserOptions(flatConfig, parserOptions) {
   delete flatConfig.parserOptions;
 }
 
-const withLegacyContext = (rule) => ({
-  ...rule,
-  create(context) {
-    const compatibleContext = Object.assign(Object.create(context), {
-      getScope: (node) => context.sourceCode?.getScope(node) ?? context.getScope?.(node),
-      getSourceCode: () => context.sourceCode ?? context.getSourceCode?.(),
-    });
-
-    return rule.create(compatibleContext);
-  },
-});
-
 export class FlatCompatRuleTester extends RuleTester {
   constructor(testerConfig) {
     super(FlatCompatRuleTester._flatCompat(testerConfig));
   }
 
   run(ruleName, rule, tests) {
-    super.run(ruleName, withLegacyContext(rule), {
+    super.run(ruleName, rule, {
       valid: tests.valid.map((test) => FlatCompatRuleTester._flatCompat(test)),
       invalid: tests.invalid.map((test) => FlatCompatRuleTester._flatCompat(test)),
     });
