@@ -14,7 +14,9 @@ import * as rule from "../../src/rules/prefer-empty.js";
 // Tests
 //------------------------------------------------------------------------------
 
-const ruleTester = new RuleTester({ languageOptions: { ecmaVersion: 2015 } });
+const ruleTester = new RuleTester({
+  languageOptions: { ecmaVersion: 2015, sourceType: "module" },
+});
 ruleTester.run("prefer-empty", rule, {
   valid: [
     `expect().toBe(true)`,

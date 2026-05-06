@@ -14,7 +14,9 @@ import * as rule from "../../src/rules/prefer-to-have-value.js";
 // Tests
 //------------------------------------------------------------------------------
 
-const ruleTester = new RuleTester({ languageOptions: { ecmaVersion: 2020 } });
+const ruleTester = new RuleTester({
+  languageOptions: { ecmaVersion: 2020, sourceType: "module" },
+});
 
 const errors = [{ messageId: "use-to-have-value" }];
 ruleTester.run("prefer-to-have-value", rule, {

@@ -2,7 +2,9 @@ import { RuleTester } from "eslint";
 import * as rule from "../../src/rules/prefer-to-have-class.js";
 
 const errors = [{ messageId: "use-to-have-class" }];
-const ruleTester = new RuleTester({ languageOptions: { ecmaVersion: 2015 } });
+const ruleTester = new RuleTester({
+  languageOptions: { ecmaVersion: 2015, sourceType: "module" },
+});
 ruleTester.run("prefer-to-have-class", rule, {
   valid: [
     `expect().toBe(true)`,

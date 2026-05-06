@@ -6,7 +6,9 @@
 import { RuleTester } from "eslint";
 import * as rule from "../../src/rules/prefer-focus.js";
 
-const ruleTester = new RuleTester();
+const ruleTester = new RuleTester({
+  languageOptions: { sourceType: "module" },
+});
 ruleTester.run("prefer-focus", rule, {
   valid: [
     `expect().toBe(true)`,

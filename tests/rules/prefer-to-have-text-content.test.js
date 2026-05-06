@@ -14,7 +14,9 @@ import * as rule from "../../src/rules/prefer-to-have-text-content.js";
 // Tests
 //------------------------------------------------------------------------------
 
-const ruleTester = new RuleTester({ languageOptions: { ecmaVersion: 2015 } });
+const ruleTester = new RuleTester({
+  languageOptions: { ecmaVersion: 2015, sourceType: "module" },
+});
 ruleTester.run("prefer-to-have-text-content", rule, {
   valid: [
     `expect().toBe(true)`,
