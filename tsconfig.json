@@ -15,5 +15,5 @@
     "verbatimModuleSyntax": true
   },
   "include": ["*.config.js", "index.d.ts", "src/**/*.js", "tests/**/*.js"],
-  "exclude": ["coverage", "dist", "node_modules"]
+  "exclude": ["coverage", "dist", "node_modules", ".cache"]
 }
