@@ -4,7 +4,9 @@ const namespace = "jest-dom";
 
 /** @type {import("eslint").Linter.RulesRecord} */
 const allRules = Object.fromEntries(
-  Object.keys(rules).map((ruleName) => [`${namespace}/${ruleName}`, "error"]),
+  Object.entries(rules)
+    .filter(([, rule]) => !rule.meta?.deprecated)
+    .map(([name]) => [`${namespace}/${name}`, "error"]),
 );
 
 export default allRules;
