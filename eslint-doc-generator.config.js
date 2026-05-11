@@ -1,7 +1,6 @@
 /** @type {import("eslint-doc-generator").GenerateOptions} */
 const config = {
   configEmoji: [["recommended", "✅"]],
-  ruleDocSectionOptions: false,
 
   async postprocess(content, path) {
     const prettier = await import("prettier");

@@ -43,9 +43,10 @@ project's `devDependencies`:
 npm i -D github:Aesthermortis/eslint-plugin-jest-dom
 ```
 
-This plugin targets `Node.js 24+`, `npm 11+`, and `ESLint 10`.
-It also has an optional peer dependency on [`@testing-library/dom`](https://testing-library.com/docs/dom-testing-library/intro/)
-to detect the full set of Testing Library queries.
+> [!NOTE]
+> This fork targets `Node.js 24+`, `npm 11+`, and `ESLint 10`.
+> It also has an optional peer dependency on [`@testing-library/dom`](https://testing-library.com/docs/dom-testing-library/intro/)
+> to detect the full set of Testing Library queries.
 
 ## Usage
 
