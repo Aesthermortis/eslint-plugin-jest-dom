@@ -3,19 +3,15 @@ import allRules from "./configs/all.js";
 import recommendedRules from "./configs/recommended.js";
 import rules from "./rules/index.js";
 
-const { name: packageName, version: packageVersion } = packageJson;
 const namespace = "jest-dom";
-
-/** @type {Record<string, import("eslint").Linter.Config>} */
-const configs = {};
 
 const plugin = {
   meta: {
-    name: packageName,
+    name: "eslint-plugin-jest-dom",
     namespace,
-    version: packageVersion,
+    version: packageJson.version,
   },
-  configs,
+  configs: {},
   rules,
 };
 
