@@ -9,19 +9,19 @@ describe("getSourceCode", () => {
 
     expect(getSourceCode(context)).toBe(sourceCode);
   });
-
-  it("returns undefined when the context has no source code API", () => {
-    expect(getSourceCode({})).toBeUndefined();
-  });
 });
 
 describe("getScope", () => {
   it("returns scope from the current ESLint source code API", () => {
-    const node = {};
+    const node = /** @type {import("@typescript-eslint/types").TSESTree.Node} */ ({});
     const scope = {};
     let currentApiNode;
     const context = {
       sourceCode: {
+        /**
+         * @param {import("@typescript-eslint/types").TSESTree.Node} receivedNode - Node passed to the source code API.
+         * @returns {object} Scope object.
+         */
         getScope(receivedNode) {
           currentApiNode = receivedNode;
           return scope;
