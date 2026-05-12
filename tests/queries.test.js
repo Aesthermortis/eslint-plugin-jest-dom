@@ -1,14 +1,15 @@
 import { queries, resolveQueries } from "../src/queries.js";
 
 describe("when @testing-library/dom is not available", () => {
-  it("uses the default queries", () => {
-    const fallbackQueries = resolveQueries(() => {
+  it("uses the default queries", async () => {
+    const fallbackQueries = await resolveQueries(() => {
       const error = new Error("module not found");
-      error.code = "MODULE_NOT_FOUND";
-      throw error;
+      error.code = "ERR_MODULE_NOT_FOUND";
+
+      return Promise.reject(error);
     });
 
-    expect([...fallbackQueries].toSorted()).toStrictEqual([
+    expect([...fallbackQueries].toSorted((a, b) => a.localeCompare(b))).toStrictEqual([
       "findAllByAltText",
       "findAllByDisplayValue",
       "findAllByLabelText",
@@ -63,7 +64,7 @@ describe("when @testing-library/dom is not available", () => {
 
 describe("when @testing-library/dom is available", () => {
   it("returns the queries from the library", () => {
-    expect([...queries].toSorted()).toStrictEqual([
+    expect([...queries].toSorted((a, b) => a.localeCompare(b))).toStrictEqual([
       "findAllByAltText",
       "findAllByDisplayValue",
       "findAllByLabelText",
@@ -115,11 +116,9 @@ describe("when @testing-library/dom is available", () => {
     ]);
   });
 
-  it("re-throws unexpected errors", () => {
-    expect(() =>
-      resolveQueries(() => {
-        throw new Error("oh noes!");
-      }),
-    ).toThrow(/oh noes!/iu);
+  it("re-throws unexpected errors", async () => {
+    await expect(resolveQueries(() => Promise.reject(new Error("oh noes!")))).rejects.toThrow(
+      /oh noes!/iu,
+    );
   });
 });
