@@ -24,6 +24,9 @@ import * as preferToHaveStyle from "./prefer-to-have-style.js";
 import * as preferToHaveTextContent from "./prefer-to-have-text-content.js";
 import * as preferToHaveValue from "./prefer-to-have-value.js";
 
+/** @import {JestDomRuleModule} from "../types.d.ts" */
+
+/** @type {Record<string, JestDomRuleModule>} */
 const rules = {
   "prefer-checked": preferChecked,
   "prefer-empty": preferEmpty,

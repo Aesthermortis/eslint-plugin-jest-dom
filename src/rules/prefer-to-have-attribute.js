@@ -8,14 +8,18 @@ import { getSourceCode } from "../context.js";
 // Rule Definition
 //------------------------------------------------------------------------------
 
+/** @import {JestDomRuleModule} from "../types.d.ts" */
+
+/** @type {JestDomRuleModule["meta"]} */
 export const meta = {
+  type: "problem",
   docs: {
-    category: "Best Practices",
     description: "prefer toHaveAttribute over checking  getAttribute/hasAttribute ",
     url: "prefer-to-have-attribute",
     recommended: true,
   },
   fixable: "code",
+  schema: [],
 };
 
 export const create = (context) => ({

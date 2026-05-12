@@ -5,14 +5,18 @@
 
 import createBannedAttributeValueRule from "../createBannedAttributeValueRule.js";
 
+/** @import {JestDomRuleModule} from "../types.d.ts" */
+
+/** @type {JestDomRuleModule["meta"]} */
 export const meta = {
+  type: "suggestion",
   docs: {
     description: 'prefer toBePartiallyChecked over checking aria-checked="mixed"',
-    category: "Best Practices",
     recommended: false,
     url: "prefer-partially-checked",
   },
   fixable: "code",
+  schema: [],
 };
 
 export const create = createBannedAttributeValueRule({

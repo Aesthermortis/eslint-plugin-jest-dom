@@ -4,14 +4,18 @@
  */
 import { getSourceCode } from "../context.js";
 
+/** @import {JestDomRuleModule} from "../types.d.ts" */
+
+/** @type {JestDomRuleModule["meta"]} */
 export const meta = {
+  type: "suggestion",
   docs: {
     description: "Prefer toBeEmpty over checking innerHTML",
-    category: "Best Practices",
     recommended: true,
     url: "prefer-empty",
   },
   fixable: "code", // or "code" or "whitespace"
+  schema: [],
 };
 
 export const create = (context) => {

@@ -144,16 +144,20 @@ function isSelectedTextAssertion(expectCall, matcherCall, sourceCode) {
   );
 }
 
+/** @import {JestDomRuleModule} from "../types.d.ts" */
+
+/** @type {JestDomRuleModule["meta"]} */
 export const meta = {
+  type: "suggestion",
   docs: {
     description: "prefer toHaveSelection over checking selection manually",
-    category: "Best Practices",
     recommended: false,
     url: "prefer-to-have-selection",
   },
   messages: {
     [messageId]: "Prefer toHaveSelection() over asserting text selection manually.",
   },
+  schema: [],
 };
 
 export const create = (context) => ({

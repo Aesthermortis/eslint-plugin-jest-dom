@@ -14,6 +14,13 @@
     "types": ["node", "jest"],
     "verbatimModuleSyntax": true
   },
-  "include": ["*.config.js", "index.d.ts", "src/**/*.js", "types/**/*.d.ts", "tests/**/*.js"],
+  "include": [
+    "*.config.js",
+    "index.d.ts",
+    "src/**/*.js",
+    "types/**/*.d.ts",
+    "tests/**/*.js",
+    "src/types.d.ts"
+  ],
   "exclude": ["coverage", "dist", "node_modules", ".cache"]
 }

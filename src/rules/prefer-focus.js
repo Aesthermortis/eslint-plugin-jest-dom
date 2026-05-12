@@ -12,14 +12,18 @@ const variantsOfDoc = [
   `[object.object.object.name='global'][object.object.property.name='window'][object.property.name=document]`,
 ];
 
+/** @import {JestDomRuleModule} from "../types.d.ts" */
+
+/** @type {JestDomRuleModule["meta"]} */
 export const meta = {
+  type: "suggestion",
   docs: {
     url: "prefer-focus",
     description: "prefer toHaveFocus over checking document.activeElement",
-    category: "Best Practices",
     recommended: true,
   },
   fixable: "code",
+  schema: [],
 };
 
 export const create = (context) => ({

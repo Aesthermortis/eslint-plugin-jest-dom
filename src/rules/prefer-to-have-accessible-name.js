@@ -7,16 +7,20 @@ import { createAccessibleAttributeRule } from "../createAccessibleAttributeRule.
 
 const messageId = "prefer-to-have-accessible-name";
 
+/** @import {JestDomRuleModule} from "../types.d.ts" */
+
+/** @type {JestDomRuleModule["meta"]} */
 export const meta = {
+  type: "suggestion",
   docs: {
     description: "prefer toHaveAccessibleName over checking aria-label manually",
-    category: "Best Practices",
     recommended: false,
     url: "prefer-to-have-accessible-name",
   },
   messages: {
     [messageId]: "Prefer toHaveAccessibleName() over asserting aria-label manually.",
   },
+  schema: [],
 };
 
 export const create = createAccessibleAttributeRule({

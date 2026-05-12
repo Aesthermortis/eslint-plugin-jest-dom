@@ -38,9 +38,12 @@ const getClassListContainsExpectation = (matcherName, matcherArg) => {
   return null;
 };
 
+/** @import {JestDomRuleModule} from "../types.d.ts" */
+
+/** @type {JestDomRuleModule["meta"]} */
 export const meta = {
+  type: "suggestion",
   docs: {
-    category: "Best Practices",
     url: "prefer-to-have-class",
     description: "prefer toHaveClass over checking element className",
     recommended: true,
@@ -49,6 +52,7 @@ export const meta = {
     [messageId]: `Prefer .toHaveClass() over checking element className`,
   },
   fixable: "code",
+  schema: [],
 };
 
 export const create = (context) => ({

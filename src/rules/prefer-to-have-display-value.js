@@ -73,16 +73,20 @@ function isValuePropertyRead(node) {
   );
 }
 
+/** @import {JestDomRuleModule} from "../types.d.ts" */
+
+/** @type {JestDomRuleModule["meta"]} */
 export const meta = {
+  type: "suggestion",
   docs: {
     description: "prefer toHaveDisplayValue over manual value assertions",
-    category: "Best Practices",
     recommended: false,
     url: "prefer-to-have-display-value",
   },
   messages: {
     [messageId]: "Prefer toHaveDisplayValue() over manual value assertions.",
   },
+  schema: [],
 };
 
 export const create = (context) => ({

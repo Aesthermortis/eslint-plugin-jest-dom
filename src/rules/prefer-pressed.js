@@ -25,14 +25,18 @@ function getStringLiteralValue(node) {
   return node.value;
 }
 
+/** @import {JestDomRuleModule} from "../types.d.ts" */
+
+/** @type {JestDomRuleModule["meta"]} */
 export const meta = {
+  type: "suggestion",
   docs: {
     description: "prefer toBePressed over checking aria-pressed manually",
-    category: "Best Practices",
     recommended: false,
     url: "prefer-pressed",
   },
   fixable: "code",
+  schema: [],
 };
 
 export const create = (context) => ({

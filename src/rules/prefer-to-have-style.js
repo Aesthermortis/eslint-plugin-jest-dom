@@ -8,14 +8,19 @@ import { getSourceCode } from "../context.js";
 // Rule Definition
 //------------------------------------------------------------------------------
 const camelCase = (styleName) => styleName.replaceAll(/-([a-z])/g, (c) => c[1].toUpperCase());
+
+/** @import {JestDomRuleModule} from "../types.d.ts" */
+
+/** @type {JestDomRuleModule["meta"]} */
 export const meta = {
+  type: "suggestion",
   docs: {
-    category: "Best Practices",
     url: "prefer-to-have-style",
     description: "prefer toHaveStyle over checking element style",
     recommended: true,
   },
   fixable: "code",
+  schema: [],
 };
 
 export const create = (context) => {

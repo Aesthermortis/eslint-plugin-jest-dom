@@ -9,15 +9,18 @@ import { getAssignmentForIdentifier } from "../assignment-ast.js";
 import { getSourceCode } from "../context.js";
 import { queries } from "../queries.js";
 
+/** @import {JestDomRuleModule} from "../types.d.ts" */
+
+/** @type {JestDomRuleModule["meta"]} */
 export const meta = {
-  type: "suggestion",
+  type: "problem",
   docs: {
-    category: "Best Practices",
     description: "Prefer .toBeInTheDocument() for asserting the existence of a DOM node",
     url: "prefer-in-document",
     recommended: true,
   },
   fixable: "code",
+  schema: [],
   messages: {
     "use-document": `Prefer .toBeInTheDocument() for asserting DOM node existence`,
     "invalid-combination-length-1": `Invalid combination of {{ query }} and .toHaveLength(1). Did you mean to use {{ allQuery }}?`,

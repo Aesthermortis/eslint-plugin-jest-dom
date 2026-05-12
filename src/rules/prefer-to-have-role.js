@@ -142,16 +142,20 @@ function isRoleGetAttributeAssertion(context, expectCall, matcherCall) {
   );
 }
 
+/** @import {JestDomRuleModule} from "../types.d.ts" */
+
+/** @type {JestDomRuleModule["meta"]} */
 export const meta = {
+  type: "suggestion",
   docs: {
     description: "prefer toHaveRole over checking role attributes manually",
-    category: "Best Practices",
     recommended: false,
     url: "prefer-to-have-role",
   },
   messages: {
     [messageId]: "Prefer toHaveRole() over asserting role attributes manually.",
   },
+  schema: [],
 };
 
 export const create = (context) => ({

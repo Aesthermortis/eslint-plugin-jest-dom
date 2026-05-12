@@ -10,14 +10,18 @@ import { getSourceCode } from "../context.js";
 // Rule Definition
 //------------------------------------------------------------------------------
 
+/** @import {JestDomRuleModule} from "../types.d.ts" */
+
+/** @type {JestDomRuleModule["meta"]} */
 export const meta = {
+  type: "suggestion",
   docs: {
-    category: "Best Practices",
     description: "prefer toHaveValue over checking element.value",
     url: "prefer-to-have-value",
     recommended: true,
   },
   fixable: "code",
+  schema: [],
   messages: {
     "use-to-have-value": `Prefer .toHaveValue() over other attribute checks`,
   },

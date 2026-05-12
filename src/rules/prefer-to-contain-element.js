@@ -64,16 +64,20 @@ function isContainsCall(node) {
   );
 }
 
+/** @import {JestDomRuleModule} from "../types.d.ts" */
+
+/** @type {JestDomRuleModule["meta"]} */
 export const meta = {
+  type: "suggestion",
   docs: {
     description: "prefer toContainElement over manual contains assertions",
-    category: "Best Practices",
     recommended: false,
     url: "prefer-to-contain-element",
   },
   messages: {
     [messageId]: "Prefer toContainElement() over manual contains assertions.",
   },
+  schema: [],
 };
 
 export const create = (context) => ({

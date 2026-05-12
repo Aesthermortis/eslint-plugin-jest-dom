@@ -38,14 +38,18 @@ const getExactReplacementPattern = (expectedArg) => {
   return null;
 };
 
+/** @import {JestDomRuleModule} from "../types.d.ts" */
+
+/** @type {JestDomRuleModule["meta"]} */
 export const meta = {
+  type: "suggestion",
   docs: {
-    category: "Best Practices",
     url: "prefer-to-have-text-content",
     description: "Prefer toHaveTextContent over checking element.textContent",
     recommended: true,
   },
   fixable: "code",
+  schema: [],
 };
 
 export const create = (context) => ({

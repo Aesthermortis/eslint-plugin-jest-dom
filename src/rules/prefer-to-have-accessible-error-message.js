@@ -121,16 +121,20 @@ function isErrorMessageGetAttributeAssertion(expectCall, matcherCall) {
   );
 }
 
+/** @import {JestDomRuleModule} from "../types.d.ts" */
+
+/** @type {JestDomRuleModule["meta"]} */
 export const meta = {
+  type: "suggestion",
   docs: {
     description: "prefer toHaveAccessibleErrorMessage over checking aria-errormessage manually",
-    category: "Best Practices",
     recommended: false,
     url: "prefer-to-have-accessible-error-message",
   },
   messages: {
     [messageId]: "Prefer toHaveAccessibleErrorMessage() over asserting aria-errormessage manually.",
   },
+  schema: [],
 };
 
 export const create = (context) => ({

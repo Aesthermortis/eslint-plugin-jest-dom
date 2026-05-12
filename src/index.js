@@ -5,17 +5,21 @@ import rules from "./rules/index.js";
 
 const namespace = "jest-dom";
 
+/** @type {import("../index.d.ts").JestDomPlugin} */
 const plugin = {
   meta: {
     name: "eslint-plugin-jest-dom",
     namespace,
     version: packageJson.version,
   },
-  configs: {},
+  get configs() {
+    return configs;
+  },
   rules,
 };
 
-Object.assign(plugin.configs, {
+/** @type {import("../index.d.ts").JestDomPlugin["configs"]} */
+const configs = {
   all: {
     name: `${namespace}/all`,
     plugins: { [namespace]: plugin },
@@ -26,6 +30,6 @@ Object.assign(plugin.configs, {
     plugins: { [namespace]: plugin },
     rules: recommendedRules,
   },
-});
+};
 
 export default plugin;
