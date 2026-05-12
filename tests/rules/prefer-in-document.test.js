@@ -7,7 +7,7 @@
 // Requirements
 //------------------------------------------------------------------------------
 
-import parser from "@typescript-eslint/parser";
+import { parser } from "typescript-eslint";
 
 import * as rule from "../../src/rules/prefer-in-document.js";
 import { RuleTester } from "eslint";
