@@ -10,6 +10,58 @@ import { getSourceCode } from "../context.js";
 import { queries } from "../queries.js";
 
 /** @import {JestDomRuleModule} from "../types.d.ts" */
+/** @typedef {import("@typescript-eslint/types").TSESTree.AwaitExpression} AwaitExpression */
+/** @typedef {import("@typescript-eslint/types").TSESTree.CallExpression} CallExpression */
+/** @typedef {import("@typescript-eslint/types").TSESTree.CallExpressionArgument} CallExpressionArgument */
+/** @typedef {import("@typescript-eslint/types").TSESTree.Expression} Expression */
+/** @typedef {import("@typescript-eslint/types").TSESTree.Identifier} Identifier */
+/** @typedef {import("@typescript-eslint/types").TSESTree.Literal} Literal */
+/** @typedef {import("@typescript-eslint/types").TSESTree.MemberExpression} MemberExpression */
+/** @typedef {import("@typescript-eslint/types").TSESTree.Node} Node */
+/**
+ * @typedef {import("@typescript-eslint/utils/ts-eslint").RuleContext<
+ *   string,
+ *   readonly unknown[]
+ * >} RuleContext
+ */
+/** @typedef {import("@typescript-eslint/utils/ts-eslint").RuleListener} RuleListener */
+/** @typedef {import("eslint").Rule.Fix} Fix */
+/** @typedef {Node & { parent?: NodeWithParent }} NodeWithParent */
+/** @typedef {MemberExpression & { computed: false; property: Identifier }} StaticMemberExpression */
+/** @typedef {Identifier | StaticMemberExpression} QueryNode */
+/**
+ * @typedef {{
+ *   queryNode: QueryNode | null;
+ *   matcherNode: Identifier;
+ *   matcherArguments: CallExpressionArgument[];
+ *   negatedMatcher: boolean;
+ *   expectCall?: CallExpression;
+ * }} ReportContext
+ */
+
+const astNodeTypes = /** @type {const} */ ({
+  AwaitExpression:
+    /** @type {import("@typescript-eslint/types").AST_NODE_TYPES.AwaitExpression} */ (
+      "AwaitExpression"
+    ),
+  CallExpression: /** @type {import("@typescript-eslint/types").AST_NODE_TYPES.CallExpression} */ (
+    "CallExpression"
+  ),
+  Identifier: /** @type {import("@typescript-eslint/types").AST_NODE_TYPES.Identifier} */ (
+    "Identifier"
+  ),
+  Literal: /** @type {import("@typescript-eslint/types").AST_NODE_TYPES.Literal} */ ("Literal"),
+  MemberExpression:
+    /** @type {import("@typescript-eslint/types").AST_NODE_TYPES.MemberExpression} */ (
+      "MemberExpression"
+    ),
+});
+
+const astTokenTypes = /** @type {const} */ ({
+  Punctuator: /** @type {import("@typescript-eslint/types").AST_TOKEN_TYPES.Punctuator} */ (
+    "Punctuator"
+  ),
+});
 
 /** @type {JestDomRuleModule["meta"]} */
 export const meta = {
@@ -32,8 +84,8 @@ export const meta = {
 /**
  * Checks whether a matcher asserts absence instead of presence.
  *
- * @param {object} matcherNode - Matcher property node.
- * @param {object[]} matcherArguments - Arguments passed to the matcher.
+ * @param {Identifier} matcherNode - Matcher property node.
+ * @param {CallExpressionArgument[]} matcherArguments - Arguments passed to the matcher.
  * @returns {boolean} Whether the matcher asserts absence.
  */
 function isAntonymMatcher(matcherNode, matcherArguments) {
@@ -48,22 +100,22 @@ function isAntonymMatcher(matcherNode, matcherArguments) {
 /**
  * Checks whether a matcher compares the received value with null.
  *
- * @param {object} matcherNode - Matcher property node.
- * @param {object[]} matcherArguments - Arguments passed to the matcher.
+ * @param {Identifier} matcherNode - Matcher property node.
+ * @param {CallExpressionArgument[]} matcherArguments - Arguments passed to the matcher.
  * @returns {boolean} Whether the matcher compares against null.
  */
 function usesToBeOrToEqualWithNull(matcherNode, matcherArguments) {
   return (
     (matcherNode.name === "toBe" || matcherNode.name === "toEqual") &&
-    matcherArguments[0].value === null
+    getLiteralValue(matcherArguments[0]) === null
   );
 }
 
 /**
  * Checks whether a matcher asserts a zero length.
  *
- * @param {object} matcherNode - Matcher property node.
- * @param {object[]} matcherArguments - Arguments passed to the matcher.
+ * @param {Identifier} matcherNode - Matcher property node.
+ * @param {CallExpressionArgument[]} matcherArguments - Arguments passed to the matcher.
  * @returns {boolean} Whether the matcher asserts zero length.
  */
 function usesToHaveLengthZero(matcherNode, matcherArguments) {
@@ -71,8 +123,107 @@ function usesToHaveLengthZero(matcherNode, matcherArguments) {
   // matcherArguments[0].value:     toHaveLength(0, ...) means zero length
   return (
     matcherNode.name === "toHaveLength" &&
-    (matcherArguments.length === 0 || matcherArguments[0].value === 0)
+    (matcherArguments.length === 0 || getLiteralValue(matcherArguments[0]) === 0)
   );
+}
+
+/**
+ * @param {Node} node - AST node whose parent should be read.
+ * @returns {NodeWithParent | undefined} Parent node, when present.
+ */
+function getParent(node) {
+  return /** @type {NodeWithParent} */ (node).parent;
+}
+
+/**
+ * @param {Node | null | undefined} node - AST node to inspect.
+ * @returns {node is AwaitExpression} Whether the node is an await expression.
+ */
+function isAwaitExpression(node) {
+  return node?.type === astNodeTypes.AwaitExpression;
+}
+
+/**
+ * @param {Node | null | undefined} node - AST node to inspect.
+ * @returns {node is CallExpression} Whether the node is a call expression.
+ */
+function isCallExpression(node) {
+  return node?.type === astNodeTypes.CallExpression;
+}
+
+/**
+ * @param {Node | null | undefined} node - AST node to inspect.
+ * @returns {node is Identifier} Whether the node is an identifier.
+ */
+function isIdentifier(node) {
+  return node?.type === astNodeTypes.Identifier;
+}
+
+/**
+ * @param {Node | null | undefined} node - AST node to inspect.
+ * @returns {node is Literal} Whether the node is a literal.
+ */
+function isLiteral(node) {
+  return node?.type === astNodeTypes.Literal;
+}
+
+/**
+ * @param {Node | null | undefined} node - AST node to inspect.
+ * @returns {node is StaticMemberExpression} Whether the node is a static member expression.
+ */
+function isStaticMemberExpression(node) {
+  return (
+    node?.type === astNodeTypes.MemberExpression &&
+    !node.computed &&
+    node.property.type === astNodeTypes.Identifier
+  );
+}
+
+/**
+ * @param {CallExpressionArgument | Node | undefined} node - AST node to inspect.
+ * @returns {unknown} Literal value, when present.
+ */
+function getLiteralValue(node) {
+  return isLiteral(node) ? node.value : undefined;
+}
+
+/**
+ * @param {QueryNode} queryNode - Query node to read.
+ * @returns {string} Query name.
+ */
+function getQueryName(queryNode) {
+  return isIdentifier(queryNode) ? queryNode.name : queryNode.property.name;
+}
+
+/**
+ * @param {QueryNode} queryNode - Query node to replace.
+ * @returns {Identifier} Node to use as a query name replacement target.
+ */
+function getQueryReplacementNode(queryNode) {
+  return isIdentifier(queryNode) ? queryNode : queryNode.property;
+}
+
+/**
+ * @param {CallExpression} callExpressionNode - Call expression to inspect.
+ * @returns {QueryNode | null} Query callee when it is statically named.
+ */
+function getQueryCalleeNode(callExpressionNode) {
+  return isIdentifier(callExpressionNode.callee) ||
+    isStaticMemberExpression(callExpressionNode.callee)
+    ? callExpressionNode.callee
+    : null;
+}
+
+/**
+ * @param {CallExpressionArgument} argument - Argument passed to expect(...).
+ * @returns {QueryNode | null} Query node inside the argument.
+ */
+function getQueryNodeFromExpectArgument(argument) {
+  if (isAwaitExpression(argument) && isCallExpression(argument.argument)) {
+    return getQueryCalleeNode(argument.argument);
+  }
+
+  return isCallExpression(argument) ? getQueryCalleeNode(argument) : null;
 }
 
 /**
@@ -81,45 +232,48 @@ function usesToHaveLengthZero(matcherNode, matcherArguments) {
  * <query>() -> <query>
  * screen.<query>() -> <query>
  *
- * @param {object | null | undefined} callExpressionNode - Candidate call expression node.
- * @returns {object | null} The identifier or member property node when present.
+ * @param {Node | null | undefined} callExpressionNode - Candidate call expression node.
+ * @returns {Identifier | null} The identifier or member property node when present.
  */
 function getDTLQueryIdentifierNode(callExpressionNode) {
-  if (!callExpressionNode || callExpressionNode.type !== "CallExpression") {
+  if (!isCallExpression(callExpressionNode)) {
     return null;
   }
 
-  if (callExpressionNode.callee.type === "Identifier") {
+  if (isIdentifier(callExpressionNode.callee)) {
     return callExpressionNode.callee;
   }
 
-  return callExpressionNode.callee.property;
+  return isStaticMemberExpression(callExpressionNode.callee)
+    ? callExpressionNode.callee.property
+    : null;
 }
 
-export const create = (context) => {
+/**
+ * @param {RuleContext} context - ESLint rule context.
+ * @returns {RuleListener} Rule listener.
+ */
+export function create(context) {
   const alternativeMatchers =
     /^(toHaveLength|toBeDefined|toBeNull|toBe|toEqual|toBeTruthy|toBeFalsy)$/;
 
   /**
    * Resolves a numeric length value from a literal or assigned identifier.
    *
-   * @param {object[]} matcherArguments - Arguments passed to the matcher.
+   * @param {CallExpressionArgument[]} matcherArguments - Arguments passed to the matcher.
    * @returns {unknown} Length value when it can be resolved.
    */
   function getLengthValue(matcherArguments) {
     let lengthValue;
+    const [matcherArgument] = matcherArguments;
 
-    if (matcherArguments[0].type === "Identifier") {
-      const assignment = getAssignmentForIdentifier(
-        context,
-        matcherArguments[0],
-        matcherArguments[0].name,
-      );
-      if (assignment) {
+    if (isIdentifier(matcherArgument)) {
+      const assignment = getAssignmentForIdentifier(context, matcherArgument, matcherArgument.name);
+      if (isLiteral(assignment)) {
         lengthValue = assignment.value;
       }
-    } else if (matcherArguments[0].type === "Literal") {
-      lengthValue = matcherArguments[0].value;
+    } else if (isLiteral(matcherArgument)) {
+      lengthValue = matcherArgument.value;
     }
 
     return lengthValue;
@@ -128,21 +282,19 @@ export const create = (context) => {
   /**
    * Reports invalid existence assertions for Testing Library queries.
    *
-   * @param {object} reportContext - Nodes and matcher state for the candidate assertion.
-   * @param {object | null} reportContext.queryNode - Query identifier node to inspect.
-   * @param {object} reportContext.matcherNode - Matcher property node.
-   * @param {object[]} reportContext.matcherArguments - Arguments passed to the matcher.
-   * @param {boolean} reportContext.negatedMatcher - Whether the assertion uses `.not`.
-   * @param {object | undefined} reportContext.expect - Expect call node for negated fixes.
+   * @param {ReportContext} reportContext - Nodes and matcher state for the candidate assertion.
    * @returns {void}
    */
-  function check({ queryNode, matcherNode, matcherArguments, negatedMatcher, expect }) {
-    if (matcherNode.parent.parent.type !== "CallExpression") {
+  function check({ queryNode, matcherNode, matcherArguments, negatedMatcher, expectCall }) {
+    const matcherMember = getParent(matcherNode);
+    const matcherCall = matcherMember && getParent(matcherMember);
+
+    if (!isCallExpression(matcherCall)) {
       return;
     }
 
     // only report on dom nodes which we can resolve to RTL queries.
-    if (!queryNode || (!queryNode.name && !queryNode.property)) {
+    if (!queryNode) {
       return;
     }
 
@@ -157,7 +309,7 @@ export const create = (context) => {
     //
     if (matcherNode.name === "toHaveLength" && matcherArguments.length === 1) {
       const lengthValue = getLengthValue(matcherArguments);
-      const queryName = queryNode.name || queryNode.property.name;
+      const queryName = getQueryName(queryNode);
 
       const isSingleQuery = queries.includes(queryName) && !/AllBy/.test(queryName);
       const hasViolation = isSingleQuery && [1, 0].includes(lengthValue);
@@ -182,7 +334,7 @@ export const create = (context) => {
               messageId: "replace-query-with-all",
               data: { query: queryName, allQuery },
               fix(fixer) {
-                return fixer.replaceText(queryNode.property || queryNode, allQuery);
+                return fixer.replaceText(getQueryReplacementNode(queryNode), allQuery);
               },
             },
             {
@@ -208,7 +360,7 @@ export const create = (context) => {
       return;
     }
 
-    const query = queryNode.name || queryNode.property.name;
+    const query = getQueryName(queryNode);
 
     if (queries.includes(query)) {
       context.report({
@@ -216,13 +368,14 @@ export const create = (context) => {
         messageId: "use-document",
         loc: matcherNode.loc,
         fix(fixer) {
+          /** @type {Fix[]} */
           const operations = [];
 
           // Remove any arguments in the matcher
           for (const argument of matcherArguments) {
             const sourceCode = getSourceCode(context);
             const token = sourceCode.getTokenAfter(argument);
-            if (token.value === "," && token.type === "Punctuator") {
+            if (token?.value === "," && token.type === astTokenTypes.Punctuator) {
               // Remove commas if toHaveLength had more than one argument or a trailing comma
               operations.push(fixer.replaceText(token, ""));
             }
@@ -231,14 +384,14 @@ export const create = (context) => {
 
           // AllBy should not be used with toBeInTheDocument
           operations.push(
-            fixer.replaceText(queryNode.property || queryNode, query.replace("All", "")),
+            fixer.replaceText(getQueryReplacementNode(queryNode), query.replace("All", "")),
           );
           // Flip the .not if necessary
           if (isAntonymMatcher(matcherNode, matcherArguments)) {
-            if (negatedMatcher) {
+            if (negatedMatcher && expectCall) {
               operations.push(
                 fixer.replaceTextRange(
-                  [expect.range[1], matcherNode.range[1]],
+                  [expectCall.range[1], matcherNode.range[1]],
                   ".toBeInTheDocument",
                 ),
               );
@@ -258,78 +411,149 @@ export const create = (context) => {
     }
   }
 
-  return {
+  return /** @type {RuleListener} */ ({
     // expect(<query>).not.<matcher>
     [`CallExpression[callee.object.object.callee.name='expect'][callee.object.property.name='not'][callee.property.name=${alternativeMatchers}], CallExpression[callee.object.callee.name='expect'][callee.object.property.name='not'][callee.object.arguments.0.argument.callee.name=${alternativeMatchers}]`](
+      /**
+       * @param {CallExpression} node - Matched assertion call.
+       * @returns {void}
+       */
       node,
     ) {
-      if (node.callee.object.object.arguments.length === 0) {
+      const matcherCall = /** @type {CallExpression} */ (node);
+
+      if (!isStaticMemberExpression(matcherCall.callee)) {
         return;
       }
 
-      const arg = node.callee.object.object.arguments[0];
-      const queryNode = arg.type === "AwaitExpression" ? arg.argument.callee : arg.callee;
-      const matcherNode = node.callee.property;
-      const matcherArguments = node.arguments;
+      const notMember = matcherCall.callee.object;
 
-      const expect = node.callee.object.object;
+      if (!isStaticMemberExpression(notMember) || !isCallExpression(notMember.object)) {
+        return;
+      }
+
+      const expectCall = notMember.object;
+
+      if (expectCall.arguments.length === 0) {
+        return;
+      }
+
+      const [argument] = expectCall.arguments;
+
+      if (!argument) {
+        return;
+      }
+
+      const queryNode = getQueryNodeFromExpectArgument(argument);
+      const matcherNode = matcherCall.callee.property;
+      const matcherArguments = matcherCall.arguments;
+
       check({
         negatedMatcher: true,
         queryNode,
         matcherNode,
         matcherArguments,
-        expect,
+        expectCall,
       });
     },
     // // const foo = <query> expect(foo).not.<matcher>
     [`MemberExpression[object.object.callee.name=expect][object.property.name=not][property.name=${alternativeMatchers}][object.object.arguments.0.type=Identifier]`](
+      /**
+       * @param {MemberExpression} node - Matched matcher member.
+       * @returns {void}
+       */
       node,
     ) {
-      const queryNode = getAssignmentForIdentifier(
-        context,
-        node,
-        node.object.object.arguments[0].name,
-      );
+      const matcherMember = /** @type {MemberExpression} */ (node);
 
-      // Not an RTL query
-      if (!queryNode || queryNode.type !== "CallExpression") {
+      if (
+        !isStaticMemberExpression(matcherMember) ||
+        !isStaticMemberExpression(matcherMember.object)
+      ) {
         return;
       }
 
-      const matcherNode = node.property;
+      const expectCall = matcherMember.object.object;
 
-      const matcherArguments = node.parent.arguments;
+      if (!isCallExpression(expectCall) || !isIdentifier(expectCall.arguments[0])) {
+        return;
+      }
 
-      const expect = node.object.object;
+      const queryNode = getAssignmentForIdentifier(
+        context,
+        matcherMember,
+        expectCall.arguments[0].name,
+      );
+
+      // Not an RTL query
+      if (!isCallExpression(queryNode)) {
+        return;
+      }
+
+      const matcherNode = matcherMember.property;
+
+      const matcherCall = getParent(matcherMember);
+
+      if (!isCallExpression(matcherCall)) {
+        return;
+      }
+
+      const matcherArguments = matcherCall.arguments;
+
       check({
         negatedMatcher: true,
-        queryNode: queryNode.callee,
+        queryNode:
+          isIdentifier(queryNode.callee) || isStaticMemberExpression(queryNode.callee)
+            ? queryNode.callee
+            : null,
         matcherNode,
         matcherArguments,
-        expect,
+        expectCall,
       });
     },
     // const foo = <query> expect(foo).<matcher>
     [`MemberExpression[object.callee.name=expect][property.name=${alternativeMatchers}][object.arguments.0.type=Identifier]`](
+      /**
+       * @param {MemberExpression} node - Matched matcher member.
+       * @returns {void}
+       */
       node,
     ) {
+      const matcherMember = /** @type {MemberExpression} */ (node);
+
+      if (!isStaticMemberExpression(matcherMember) || !isCallExpression(matcherMember.object)) {
+        return;
+      }
+
+      const [expectArgument] = matcherMember.object.arguments;
+
+      if (!isIdentifier(expectArgument)) {
+        return;
+      }
+
       // Value expression being assigned to the left-hand value
       const rightValueNode = getAssignmentForIdentifier(
         context,
-        node,
-        node.object.arguments[0].name,
+        matcherMember,
+        expectArgument.name,
       );
 
       // Not a DTL query
-      if (!rightValueNode || rightValueNode.type !== "CallExpression") {
+      if (!isCallExpression(rightValueNode)) {
         return;
       }
 
       const queryIdentifierNode = getDTLQueryIdentifierNode(rightValueNode);
 
-      const matcherNode = node.property;
+      const matcherNode = matcherMember.property;
 
-      const matcherArguments = node.parent.arguments;
+      const matcherCall = getParent(matcherMember);
+
+      if (!isCallExpression(matcherCall)) {
+        return;
+      }
+
+      const matcherArguments = matcherCall.arguments;
       check({
         negatedMatcher: false,
         queryNode: queryIdentifierNode,
@@ -340,21 +564,33 @@ export const create = (context) => {
     // expect(await <query>).<matcher>
     // expect(<query>).<matcher>
     [`CallExpression[callee.object.callee.name='expect'][callee.property.name=${alternativeMatchers}], CallExpression[callee.object.callee.name='expect'][callee.object.arguments.0.argument.callee.name=${alternativeMatchers}]`](
+      /**
+       * @param {CallExpression} node - Matched assertion call.
+       * @returns {void}
+       */
       node,
     ) {
-      const arg = node.callee.object.arguments[0];
+      const matcherCall = /** @type {CallExpression} */ (node);
+
+      if (
+        !isStaticMemberExpression(matcherCall.callee) ||
+        !isCallExpression(matcherCall.callee.object)
+      ) {
+        return;
+      }
+
+      const arg = matcherCall.callee.object.arguments[0];
 
       if (!arg) {
         return;
       }
 
-      const queryIdentifierNode =
-        arg.type === "AwaitExpression"
-          ? getDTLQueryIdentifierNode(arg.argument)
-          : getDTLQueryIdentifierNode(arg);
+      const queryIdentifierNode = isAwaitExpression(arg)
+        ? getDTLQueryIdentifierNode(arg.argument)
+        : getDTLQueryIdentifierNode(arg);
 
-      const matcherNode = node.callee.property;
-      const matcherArguments = node.arguments;
+      const matcherNode = matcherCall.callee.property;
+      const matcherArguments = matcherCall.arguments;
 
       check({
         negatedMatcher: false,
@@ -363,5 +599,5 @@ export const create = (context) => {
         matcherArguments,
       });
     },
-  };
-};
+  });
+}
