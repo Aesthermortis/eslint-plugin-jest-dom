@@ -7,6 +7,7 @@
  * @param {string} testCaseOptions.attribute - Attribute name under test.
  * @returns {object} Shared valid and invalid RuleTester cases.
  */
+// eslint-disable-next-line eslint-plugin/prefer-message-ids, eslint-plugin/prefer-object-rule, eslint-plugin/require-meta-docs-description, eslint-plugin/require-meta-schema, eslint-plugin/require-meta-type -- This is a RuleTester case factory, not an ESLint rule module.
 export default function createBannedAttributeTestCases({ preferred, negatedPreferred, attribute }) {
   const doubleNegativeCases = negatedPreferred.startsWith("toBe")
     ? [
