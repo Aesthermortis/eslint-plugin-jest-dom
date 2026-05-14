@@ -29,7 +29,7 @@ declare const jestDom: {
       plugins: {
         "jest-dom": typeof jestDom;
       };
-      rules: {
+      rules: Linter.RulesRecord & {
         "jest-dom/prefer-checked": "error";
         "jest-dom/prefer-empty": "error";
         "jest-dom/prefer-enabled-disabled": "error";
@@ -63,7 +63,7 @@ declare const jestDom: {
       plugins: {
         "jest-dom": typeof jestDom;
       };
-      rules: {
+      rules: Linter.RulesRecord & {
         "jest-dom/prefer-checked": "error";
         "jest-dom/prefer-empty": "error";
         "jest-dom/prefer-enabled-disabled": "error";
