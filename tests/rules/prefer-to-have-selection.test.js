@@ -25,6 +25,7 @@ ruleTester.run("prefer-to-have-selection", rule, {
     `expect(input.value.slice(input.selectionStart, input.selectionEnd)).not.toBe("hello")`,
     `expect(input.value.substring(input.selectionStart, input.selectionEnd)).not.toEqual("hello")`,
     `expect(input.value.substring(input.selectionStart, input.selectionEnd)).not.toStrictEqual("hello")`,
+    `expect(input.text.slice(input.selectionStart, input.selectionEnd)).toBe("hello")`,
     `expect(input.value.slice(input.selectionStart, input.selectionEnd)).toContain("hello")`,
     `expect(input.value.slice(input.selectionStart, input.selectionEnd)).toBe(expectedSelection)`,
     `expect(input.value.slice(input.selectionStart)).toBe("hello")`,
