@@ -199,17 +199,14 @@ function getNegatedTextContentAssertion(node) {
 /**
  * @param {RuleContext} context - ESLint rule context.
  * @param {TextContentAssertion} assertion - Parsed textContent assertion.
- * @returns {string | null} Replacement pattern, when safe.
+ * @returns {string} Replacement pattern.
  */
 function getContainOrMatchReplacement(context, assertion) {
-  if (!assertion.expectedArg) {
-    return null;
-  }
+  const expectedArg = /** @type {CallExpressionArgument} */ (assertion.expectedArg);
+  const expectedArgSource = getSourceCode(context).getText(expectedArg);
 
-  const expectedArgSource = getSourceCode(context).getText(assertion.expectedArg);
-
-  return isLiteral(assertion.expectedArg)
-    ? getReplacementPattern(assertion.expectedArg, expectedArgSource)
+  return isLiteral(expectedArg)
+    ? getReplacementPattern(expectedArg, expectedArgSource)
     : `new RegExp(${expectedArgSource})`;
 }
 
@@ -252,10 +249,6 @@ export function create(context) {
         messageId,
         fix: (fixer) => {
           const replacement = getContainOrMatchReplacement(context, assertion);
-
-          if (replacement === null) {
-            return null;
-          }
 
           return [
             fixer.removeRange([
@@ -354,10 +347,6 @@ export function create(context) {
         messageId,
         fix: (fixer) => {
           const replacement = getContainOrMatchReplacement(context, assertion);
-
-          if (replacement === null) {
-            return null;
-          }
 
           return [
             fixer.removeRange([

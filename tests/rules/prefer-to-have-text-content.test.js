@@ -25,6 +25,8 @@ ruleTester.run("prefer-to-have-text-content", rule, {
     `expect(container.lastNode).toBe("foo")`,
     `expect(element.textContent).toEqualThing("foo")`,
     `expect(element.textContent).not.toStrictEqualThing("foo")`,
+    `expect(element.textContent).toContain()`,
+    `expect(element.textContent).not.toContain()`,
   ],
 
   invalid: [
@@ -254,4 +256,166 @@ ruleTester.run("prefer-to-have-text-content", rule, {
       output: String.raw`expect(element).not.toHaveTextContent(/\$42\/month\?/)`,
     },
   ],
+});
+
+/**
+ * The rule selectors already narrow most AST shapes, so these defensive branches need direct listener invocation to
+ * stay covered.
+ *
+ * @param {object} context - Minimal ESLint rule context.
+ * @returns {Array.<(node: object) => void>} Prefer-to-have-text-content listeners.
+ */
+function getPreferToHaveTextContentListeners(context) {
+  const listeners = Object.values(rule.create(context));
+
+  expect(listeners).toHaveLength(4);
+
+  return listeners;
+}
+
+/**
+ * @param {object} object - Member object node.
+ * @param {string} propertyName - Member property name.
+ * @returns {object} Static member expression node.
+ */
+function createStaticMemberExpression(object, propertyName) {
+  const property = {
+    type: "Identifier",
+    name: propertyName,
+    range: [20, 30],
+  };
+  const member = {
+    type: "MemberExpression",
+    computed: false,
+    object,
+    property,
+  };
+
+  property.parent = member;
+
+  return member;
+}
+
+/**
+ * @param {object | undefined} expectedArg - Matcher argument.
+ * @returns {object} Positive textContent matcher call node.
+ */
+function createPositiveMatcherCall(expectedArg) {
+  const textContentAccess = createStaticMemberExpression(
+    {
+      type: "Identifier",
+      name: "element",
+      range: [0, 7],
+    },
+    "textContent",
+  );
+  const expectCall = {
+    type: "CallExpression",
+    callee: {
+      type: "Identifier",
+      name: "expect",
+    },
+    arguments: [textContentAccess],
+  };
+  const matcherMember = createStaticMemberExpression(expectCall, "toBe");
+  const matcherCall = {
+    type: "CallExpression",
+    callee: matcherMember,
+    arguments: expectedArg ? [expectedArg] : [],
+  };
+
+  textContentAccess.parent = expectCall;
+  expectCall.parent = matcherMember;
+  matcherMember.parent = matcherCall;
+
+  return textContentAccess;
+}
+
+/**
+ * @param {object | undefined} expectedArg - Matcher argument.
+ * @returns {object} Negated textContent matcher call node.
+ */
+function createNegatedMatcherCall(expectedArg) {
+  const textContentAccess = createStaticMemberExpression(
+    {
+      type: "Identifier",
+      name: "element",
+      range: [0, 7],
+    },
+    "textContent",
+  );
+  const expectCall = {
+    type: "CallExpression",
+    callee: {
+      type: "Identifier",
+      name: "expect",
+    },
+    arguments: [textContentAccess],
+  };
+  const notMember = createStaticMemberExpression(expectCall, "not");
+  const matcherMember = createStaticMemberExpression(notMember, "toBe");
+  const matcherCall = {
+    type: "CallExpression",
+    callee: matcherMember,
+    arguments: expectedArg ? [expectedArg] : [],
+  };
+
+  textContentAccess.parent = expectCall;
+  expectCall.parent = notMember;
+  notMember.parent = matcherMember;
+  matcherMember.parent = matcherCall;
+
+  return textContentAccess;
+}
+
+describe("prefer-to-have-text-content defensive AST handling", () => {
+  test("ignores malformed textContent assertions", () => {
+    let reportCalls = 0;
+    const report = () => {
+      reportCalls += 1;
+    };
+    const [
+      containingTextContentListener,
+      exactTextContentListener,
+      negatedExactTextContentListener,
+      negatedContainingTextContentListener,
+    ] = getPreferToHaveTextContentListeners({ report });
+    const malformedNode = {
+      type: "Identifier",
+      name: "textContent",
+    };
+
+    containingTextContentListener(malformedNode);
+    exactTextContentListener(malformedNode);
+    negatedExactTextContentListener(malformedNode);
+    negatedContainingTextContentListener(malformedNode);
+
+    expect(reportCalls).toBe(0);
+  });
+
+  test("returns null fixes for template literals without cooked text", () => {
+    /** @type {Array.<{ fix: (fixer: object) => null }>} */
+    const reports = [];
+    /** @param {{ fix: (fixer: object) => null }} descriptor - Report descriptor captured from context.report(). */
+    const report = (descriptor) => {
+      reports.push(descriptor);
+    };
+    const [, exactTextContentListener, negatedExactTextContentListener] =
+      getPreferToHaveTextContentListeners({ report });
+    const templateLiteralWithoutCookedText = {
+      type: "TemplateLiteral",
+      expressions: [],
+      quasis: [
+        {
+          value: {},
+        },
+      ],
+    };
+
+    exactTextContentListener(createPositiveMatcherCall(templateLiteralWithoutCookedText));
+    negatedExactTextContentListener(createNegatedMatcherCall(templateLiteralWithoutCookedText));
+
+    expect(reports).toHaveLength(2);
+    expect(reports.map((descriptor) => descriptor.fix({}))).toStrictEqual([null, null]);
+  });
 });
