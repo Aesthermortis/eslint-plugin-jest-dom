@@ -107,8 +107,10 @@ export default function createBannedAttributeTestCases({ preferred, negatedPrefe
       `const el = screen.getByText("foo"); expect(el).${negatedPreferred}`,
       `const el = screen.getByText("foo"); expect(el).toHaveProperty('value', 'bar')`,
       `const el = foo.bar(); expect(el).toHaveProperty("${attribute}", true)`,
+      `expect().toHaveAttribute("${attribute}")`,
       `expect(getFoo().${attribute}).toBe("bar")`,
       `expect(getFoo().${attribute}).not.toBe("bar")`,
+      `expect(getByText('foo').value).toBeTruthy()`,
     ],
     invalid: [
       ...doubleNegativeCases,
@@ -226,6 +228,14 @@ export default function createBannedAttributeTestCases({ preferred, negatedPrefe
         errors: [
           {
             message: `Use ${preferred} instead of toHaveProperty('${attribute}', foo)`,
+          },
+        ],
+      },
+      {
+        code: `const el = screen.getByText("foo"); expect(el).toHaveProperty('${attribute}', {})`,
+        errors: [
+          {
+            message: `Use ${preferred} instead of toHaveProperty('${attribute}', )`,
           },
         ],
       },

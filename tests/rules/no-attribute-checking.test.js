@@ -78,3 +78,151 @@ for (const { ruleName, rule, attribute } of excludeValuesCases) {
     invalid: [],
   });
 }
+
+/**
+ * The rule selectors already narrow most AST shapes, so these defensive branches need direct listener invocation to
+ * stay covered.
+ *
+ * @param {object} context - Minimal ESLint rule context.
+ * @returns {Array.<(node: object) => void>} Prefer-enabled-disabled listeners.
+ */
+function getPreferEnabledDisabledListeners(context) {
+  const listeners = Object.values(preferEnabledDisabled.create(context));
+
+  expect(listeners).toHaveLength(4);
+
+  return listeners;
+}
+
+/**
+ * @param {object} object - Member object node.
+ * @param {string} propertyName - Member property name.
+ * @returns {object} Static member expression node.
+ */
+function createStaticMemberExpression(object, propertyName) {
+  return {
+    type: "MemberExpression",
+    computed: false,
+    object,
+    property: {
+      type: "Identifier",
+      name: propertyName,
+      range: [10, 15],
+    },
+  };
+}
+
+/**
+ * @param {string} value - Literal value.
+ * @returns {object} String literal node.
+ */
+function createStringLiteral(value) {
+  return {
+    type: "Literal",
+    value,
+    raw: `'${value}'`,
+  };
+}
+
+/**
+ * @param {object} callee - Callee node.
+ * @param {object[]} args - Call arguments.
+ * @returns {object} Call expression node.
+ */
+function createCallExpression(callee, args = []) {
+  return {
+    type: "CallExpression",
+    callee,
+    arguments: args,
+    range: [0, 30],
+  };
+}
+
+describe("createBannedAttributeRule defensive AST handling", () => {
+  test("ignores malformed banned attribute assertions", () => {
+    let reportCalls = 0;
+    const report = () => {
+      reportCalls += 1;
+    };
+    const [
+      negatedPreferredListener,
+      directAttributeListener,
+      negatedAttributeMatcherListener,
+      attributeMatcherListener,
+    ] = getPreferEnabledDisabledListeners({ report });
+    const malformedMatcherCall = createCallExpression(
+      {
+        type: "Identifier",
+        name: "toBeDisabled",
+      },
+      [createStringLiteral("disabled")],
+    );
+    const matcherCallWithIdentifierObject = createCallExpression(
+      createStaticMemberExpression(
+        {
+          type: "Identifier",
+          name: "expectResult",
+        },
+        "toBeDisabled",
+      ),
+    );
+    const directAttributeMatcherCall = createCallExpression(
+      createStaticMemberExpression(
+        createCallExpression(
+          {
+            type: "Identifier",
+            name: "expect",
+          },
+          [
+            createStaticMemberExpression(
+              {
+                type: "Identifier",
+                name: "element",
+                range: [0, 7],
+              },
+              "value",
+            ),
+          ],
+        ),
+        "toBeTruthy",
+      ),
+    );
+    const negatedAttributeMatcherCallWithIdentifierArg = createCallExpression(
+      createStaticMemberExpression(
+        createStaticMemberExpression(
+          createCallExpression(
+            {
+              type: "Identifier",
+              name: "expect",
+            },
+            [
+              {
+                type: "Identifier",
+                name: "element",
+              },
+            ],
+          ),
+          "not",
+        ),
+        "toHaveAttribute",
+      ),
+      [
+        {
+          type: "Identifier",
+          name: "disabled",
+        },
+      ],
+    );
+
+    negatedPreferredListener(malformedMatcherCall);
+    negatedPreferredListener(matcherCallWithIdentifierObject);
+    directAttributeListener(malformedMatcherCall);
+    directAttributeListener(directAttributeMatcherCall);
+    negatedAttributeMatcherListener(malformedMatcherCall);
+    negatedAttributeMatcherListener(matcherCallWithIdentifierObject);
+    negatedAttributeMatcherListener(negatedAttributeMatcherCallWithIdentifierArg);
+    attributeMatcherListener(malformedMatcherCall);
+
+    expect(reportCalls).toBe(0);
+  });
+});

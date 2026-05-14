@@ -251,17 +251,13 @@ export default function createBannedAttributeRule({
           return;
         }
 
-        if (!isBannedArg(node, attributes)) {
+        const arg = getStringLiteralValue(node.arguments[0]);
+
+        if (arg === undefined || !attributes.includes(arg)) {
           return;
         }
 
         if (isExcludedValue(node, excludedValues)) {
-          return;
-        }
-
-        const arg = getStringLiteralValue(node.arguments[0]);
-
-        if (arg === undefined) {
           return;
         }
 
