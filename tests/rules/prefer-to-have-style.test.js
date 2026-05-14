@@ -107,6 +107,11 @@ ruleTester.run("prefer-to-have-style", rule, {
       output: `expect(el).toHaveStyle({backgroundColor: expect.anything()})`,
     },
     {
+      code: `expect(el.style).toContain(1)`,
+      errors,
+      output: `expect(el).toHaveStyle({1: expect.anything()})`,
+    },
+    {
       code: `expect(el.style).toContain(\`background-color\`)`,
       errors,
       output: `expect(el).toHaveStyle(\`background-color\`)`,
@@ -226,4 +231,423 @@ ruleTester.run("prefer-to-have-style", rule, {
       `,
     },
   ],
+});
+
+/**
+ * The rule selectors already narrow most AST shapes, so these defensive branches need direct listener invocation to
+ * stay covered.
+ *
+ * @param {object} context - Minimal ESLint rule context.
+ * @returns {Array.<(node: object) => void>} Prefer-to-have-style listeners.
+ */
+function getPreferToHaveStyleListeners(context) {
+  const listeners = Object.values(rule.create(context));
+
+  expect(listeners).toHaveLength(9);
+
+  return listeners;
+}
+
+/**
+ * @param {object} context - Minimal ESLint rule context.
+ * @returns {{
+ *   stylePropertyListener: (node: object) => void;
+ *   negatedStylePropertyListener: (node: object) => void;
+ * }}  Style property listeners.
+ */
+function getStylePropertyListeners(context) {
+  const listeners = getPreferToHaveStyleListeners(context);
+  const stylePropertyListener = listeners.at(7);
+  const negatedStylePropertyListener = listeners.at(8);
+
+  expect(typeof stylePropertyListener).toBe("function");
+  expect(typeof negatedStylePropertyListener).toBe("function");
+
+  return {
+    stylePropertyListener,
+    negatedStylePropertyListener,
+  };
+}
+
+/**
+ * @param {object} object - Member object node.
+ * @param {string} propertyName - Member property name.
+ * @returns {object} Static member expression node.
+ */
+function createStaticMemberExpression(object, propertyName) {
+  return {
+    type: "MemberExpression",
+    computed: false,
+    object,
+    property: {
+      type: "Identifier",
+      name: propertyName,
+      range: [10, 15],
+    },
+    range: [0, 15],
+  };
+}
+
+/**
+ * @param {object} object - Member object node.
+ * @param {object} property - Member property node.
+ * @returns {object} Computed member expression node.
+ */
+function createComputedMemberExpression(object, property) {
+  return {
+    type: "MemberExpression",
+    computed: true,
+    object,
+    property,
+    range: [0, 20],
+  };
+}
+
+/**
+ * @param {string} value - Literal value.
+ * @returns {object} Literal node.
+ */
+function createLiteral(value) {
+  return {
+    type: "Literal",
+    value,
+    range: [20, 25],
+  };
+}
+
+/** @returns {object} Identifier matcher argument node. */
+function createIdentifierArgument() {
+  return {
+    type: "Identifier",
+    name: "value",
+    range: [20, 25],
+  };
+}
+
+/** @returns {object} Unsupported matcher argument node. */
+function createUnsupportedArgument() {
+  return {
+    type: "ObjectExpression",
+    properties: [],
+  };
+}
+
+/** @returns {object} Element style member expression node. */
+function createStyleAccess() {
+  return createStaticMemberExpression(
+    {
+      type: "Identifier",
+      name: "element",
+      range: [0, 7],
+    },
+    "style",
+  );
+}
+
+/**
+ * @param {string} matcherName - Matcher name.
+ * @param {object[]} args - Matcher arguments.
+ * @returns {object} Matcher call node.
+ */
+function createMatcherCall(matcherName, args = []) {
+  const matcherMember = createStaticMemberExpression(
+    {
+      type: "CallExpression",
+      callee: {
+        type: "Identifier",
+        name: "expect",
+      },
+      arguments: [],
+    },
+    matcherName,
+  );
+
+  return {
+    type: "CallExpression",
+    callee: matcherMember,
+    arguments: args,
+  };
+}
+
+/**
+ * @param {object} styleAccess - Element style member expression node.
+ * @param {object} matcherArgument - Matcher argument node.
+ * @returns {object} Style access node with a positive static style assertion parent chain.
+ */
+function createStaticStyleAccess(styleAccess, matcherArgument) {
+  const styleMember = createStaticMemberExpression(styleAccess, "color");
+  const expectCall = {
+    type: "CallExpression",
+    callee: {
+      type: "Identifier",
+      name: "expect",
+    },
+    arguments: [styleMember],
+  };
+  const matcherMember = createStaticMemberExpression(expectCall, "toBe");
+  const matcherCall = {
+    type: "CallExpression",
+    callee: matcherMember,
+    arguments: [matcherArgument],
+  };
+
+  styleAccess.parent = styleMember;
+  styleMember.parent = expectCall;
+  expectCall.parent = matcherMember;
+  matcherMember.parent = matcherCall;
+
+  return styleAccess;
+}
+
+/**
+ * @param {object} styleAccess - Element style member expression node.
+ * @param {object} matcherArgument - Matcher argument node.
+ * @returns {object} Style access node with a negated static style assertion parent chain.
+ */
+function createNegatedStaticStyleAccess(styleAccess, matcherArgument) {
+  const styleMember = createStaticMemberExpression(styleAccess, "color");
+  const expectCall = {
+    type: "CallExpression",
+    callee: {
+      type: "Identifier",
+      name: "expect",
+    },
+    arguments: [styleMember],
+  };
+  const notMember = createStaticMemberExpression(expectCall, "not");
+  const matcherMember = createStaticMemberExpression(notMember, "toBe");
+  const matcherCall = {
+    type: "CallExpression",
+    callee: matcherMember,
+    arguments: [matcherArgument],
+  };
+
+  styleAccess.parent = styleMember;
+  styleMember.parent = expectCall;
+  expectCall.parent = notMember;
+  notMember.parent = matcherMember;
+  matcherMember.parent = matcherCall;
+
+  return styleAccess;
+}
+
+/**
+ * @param {object} styleAccess - Element style member expression node.
+ * @param {string} matcherName - Matcher name.
+ * @param {object[]} args - Matcher arguments.
+ * @returns {object} Style access node with a positive matcher parent chain.
+ */
+function createStyleAccessWithMatcher(styleAccess, matcherName, args = []) {
+  const expectCall = {
+    type: "CallExpression",
+    callee: {
+      type: "Identifier",
+      name: "expect",
+    },
+    arguments: [styleAccess],
+  };
+  const matcherMember = createStaticMemberExpression(expectCall, matcherName);
+  const matcherCall = {
+    type: "CallExpression",
+    callee: matcherMember,
+    arguments: args,
+  };
+
+  styleAccess.parent = expectCall;
+  expectCall.parent = matcherMember;
+  matcherMember.parent = matcherCall;
+
+  return styleAccess;
+}
+
+/**
+ * @param {object} styleAccess - Element style member expression node.
+ * @param {string} matcherName - Matcher name.
+ * @param {object[]} args - Matcher arguments.
+ * @returns {object} Style access node with a negated matcher parent chain.
+ */
+function createNegatedStyleAccessWithMatcher(styleAccess, matcherName, args = []) {
+  const expectCall = {
+    type: "CallExpression",
+    callee: {
+      type: "Identifier",
+      name: "expect",
+    },
+    arguments: [styleAccess],
+  };
+  const notMember = createStaticMemberExpression(expectCall, "not");
+  const matcherMember = createStaticMemberExpression(notMember, matcherName);
+  const matcherCall = {
+    type: "CallExpression",
+    callee: matcherMember,
+    arguments: args,
+  };
+
+  styleAccess.parent = expectCall;
+  expectCall.parent = notMember;
+  notMember.parent = matcherMember;
+  matcherMember.parent = matcherCall;
+
+  return styleAccess;
+}
+
+/**
+ * @param {object} styleAccess - Element style member expression node.
+ * @param {object} styleName - Computed style property node.
+ * @param {object} matcherArgument - Matcher argument node.
+ * @returns {object} Style access node with a positive computed style assertion parent chain.
+ */
+function createComputedStyleAccess(styleAccess, styleName, matcherArgument) {
+  const styleMember = createComputedMemberExpression(styleAccess, styleName);
+  const expectCall = {
+    type: "CallExpression",
+    callee: {
+      type: "Identifier",
+      name: "expect",
+    },
+    arguments: [styleMember],
+  };
+  const matcherMember = createStaticMemberExpression(expectCall, "toBe");
+  const matcherCall = {
+    type: "CallExpression",
+    callee: matcherMember,
+    arguments: [matcherArgument],
+  };
+
+  styleAccess.parent = styleMember;
+  styleMember.parent = expectCall;
+  expectCall.parent = matcherMember;
+  matcherMember.parent = matcherCall;
+
+  return styleAccess;
+}
+
+/**
+ * @param {object} styleAccess - Element style member expression node.
+ * @param {object} styleName - Computed style property node.
+ * @param {object} matcherArgument - Matcher argument node.
+ * @returns {object} Style access node with a negated computed style assertion parent chain.
+ */
+function createNegatedComputedStyleAccess(styleAccess, styleName, matcherArgument) {
+  const styleMember = createComputedMemberExpression(styleAccess, styleName);
+  const expectCall = {
+    type: "CallExpression",
+    callee: {
+      type: "Identifier",
+      name: "expect",
+    },
+    arguments: [styleMember],
+  };
+  const notMember = createStaticMemberExpression(expectCall, "not");
+  const matcherMember = createStaticMemberExpression(notMember, "toBe");
+  const matcherCall = {
+    type: "CallExpression",
+    callee: matcherMember,
+    arguments: [matcherArgument],
+  };
+
+  styleAccess.parent = styleMember;
+  styleMember.parent = expectCall;
+  expectCall.parent = notMember;
+  notMember.parent = matcherMember;
+  matcherMember.parent = matcherCall;
+
+  return styleAccess;
+}
+
+describe("prefer-to-have-style defensive AST handling", () => {
+  test("ignores malformed style assertions", () => {
+    let reportCalls = 0;
+    const report = () => {
+      reportCalls += 1;
+    };
+    const [
+      staticStyleListener,
+      negatedStaticStyleListener,
+      styleContainListener,
+      negatedStyleContainListener,
+      styleAttributeListener,
+      computedStyleListener,
+      negatedComputedStyleListener,
+      stylePropertyListener,
+      negatedStylePropertyListener,
+    ] = getPreferToHaveStyleListeners({ report });
+    const unparentedStyleAccess = createStyleAccess();
+
+    staticStyleListener(unparentedStyleAccess);
+    negatedStaticStyleListener(createStyleAccess());
+    styleContainListener(createStyleAccess());
+    negatedStyleContainListener(createStyleAccess());
+    computedStyleListener(createStyleAccess());
+    negatedComputedStyleListener(createStyleAccess());
+    stylePropertyListener(createStyleAccess());
+    negatedStylePropertyListener(createStyleAccess());
+    styleAttributeListener({
+      type: "CallExpression",
+      callee: {
+        type: "Identifier",
+        name: "toHaveAttribute",
+      },
+      arguments: [createLiteral("style"), createLiteral("color: red")],
+    });
+    styleAttributeListener(createMatcherCall("toHaveAttribute", []));
+
+    staticStyleListener(createStaticStyleAccess(createStyleAccess(), createUnsupportedArgument()));
+    negatedStaticStyleListener(
+      createNegatedStaticStyleAccess(createStyleAccess(), createUnsupportedArgument()),
+    );
+    styleContainListener(
+      createStyleAccessWithMatcher(createStyleAccess(), "toContain", [createUnsupportedArgument()]),
+    );
+    negatedStyleContainListener(
+      createNegatedStyleAccessWithMatcher(createStyleAccess(), "toContain", [
+        createUnsupportedArgument(),
+      ]),
+    );
+    computedStyleListener(
+      createComputedStyleAccess(
+        createStyleAccess(),
+        createLiteral("color"),
+        createUnsupportedArgument(),
+      ),
+    );
+    negatedComputedStyleListener(
+      createNegatedComputedStyleAccess(
+        createStyleAccess(),
+        createLiteral("color"),
+        createIdentifierArgument(),
+      ),
+    );
+    stylePropertyListener(createStyleAccessWithMatcher(createStyleAccess(), "toHaveProperty"));
+    negatedStylePropertyListener(
+      createNegatedStyleAccessWithMatcher(createStyleAccess(), "toHaveProperty"),
+    );
+
+    expect(reportCalls).toBe(0);
+  });
+
+  test("returns null fixes for style property assertions without values", () => {
+    /** @type {Array.<{ fix: (fixer: object) => null }>} */
+    const reports = [];
+    /** @param {{ fix: (fixer: object) => null }} descriptor - Report descriptor captured from context.report(). */
+    const report = (descriptor) => {
+      reports.push(descriptor);
+    };
+    const { stylePropertyListener, negatedStylePropertyListener } = getStylePropertyListeners({
+      report,
+    });
+    const fixer = {};
+
+    stylePropertyListener(
+      createStyleAccessWithMatcher(createStyleAccess(), "toHaveProperty", [createLiteral("color")]),
+    );
+    negatedStylePropertyListener(
+      createNegatedStyleAccessWithMatcher(createStyleAccess(), "toHaveProperty", [
+        createLiteral("color"),
+      ]),
+    );
+
+    expect(reports).toHaveLength(2);
+    expect(reports.map((descriptor) => descriptor.fix(fixer))).toStrictEqual([null, null]);
+  });
 });

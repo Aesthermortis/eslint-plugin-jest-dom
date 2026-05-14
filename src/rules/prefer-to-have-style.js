@@ -230,13 +230,9 @@ function getReplacementStyleParam(context, styleName, styleValue) {
   const styleNameText = getSourceCode(context).getText(styleName).slice(0, -1);
   let styleValueText = getSourceCode(context).getText(styleValue);
 
-  if (isTemplateLiteral(styleValue)) {
-    styleValueText = styleValueText.slice(1);
-  } else if (isLiteral(styleValue)) {
-    styleValueText = `${getLiteralTextValue(styleValue)}\``;
-  } else {
-    styleValueText = `${styleValueText}\``;
-  }
+  styleValueText = isTemplateLiteral(styleValue)
+    ? styleValueText.slice(1)
+    : `${getLiteralTextValue(/** @type {Literal} */ (styleValue))}\``;
 
   return `${styleNameText}: ${styleValueText}`;
 }
