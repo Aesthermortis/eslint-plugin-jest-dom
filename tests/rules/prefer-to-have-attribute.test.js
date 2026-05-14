@@ -24,6 +24,8 @@ ruleTester.run("prefer-to-have-attribute", rule, {
     "expect(element.getAttributeNode()).toBeNull()",
     `expect(element.getAttribute('foo')).toBeGreaterThan(2)`,
     `expect(element.getAttribute('foo')).toBeLessThan(2)`,
+    `expect(element.getAttribute('foo')).toContain()`,
+    `expect(element.getAttribute('foo')).toBe()`,
   ],
 
   invalid: [
@@ -254,4 +256,112 @@ ruleTester.run("prefer-to-have-attribute", rule, {
       output: 'expect(element).not.toHaveAttribute("foo")',
     },
   ],
+});
+
+/**
+ * The rule selectors already narrow most AST shapes, so these defensive branches need direct listener invocation to
+ * stay covered.
+ *
+ * @param {object} context - Minimal ESLint rule context.
+ * @returns {Array.<(node: object) => void>} Prefer-to-have-attribute listeners.
+ */
+function getPreferToHaveAttributeListeners(context) {
+  const listeners = Object.values(rule.create(context));
+
+  expect(listeners).toHaveLength(7);
+
+  return listeners;
+}
+
+/**
+ * @param {object} object - Member object node.
+ * @param {string} propertyName - Member property name.
+ * @returns {object} Static member expression node.
+ */
+function createStaticMemberExpression(object, propertyName) {
+  return {
+    type: "MemberExpression",
+    computed: false,
+    object,
+    property: {
+      type: "Identifier",
+      name: propertyName,
+      range: [10, 15],
+    },
+  };
+}
+
+/** @returns {object} Attribute name argument node. */
+function createAttributeNameArgument() {
+  return {
+    type: "Literal",
+    value: "foo",
+  };
+}
+
+/**
+ * @param {string} methodName - Attribute accessor method name.
+ * @returns {object} Attribute accessor call node without assertion parents.
+ */
+function createUnparentedAttributeCall(methodName) {
+  return {
+    type: "CallExpression",
+    callee: createStaticMemberExpression(
+      {
+        type: "Identifier",
+        name: "element",
+        range: [0, 7],
+      },
+      methodName,
+    ),
+    arguments: [createAttributeNameArgument()],
+  };
+}
+
+describe("prefer-to-have-attribute defensive AST handling", () => {
+  test("ignores malformed attribute assertions", () => {
+    let reportCalls = 0;
+    const report = () => {
+      reportCalls += 1;
+    };
+    const [
+      getAttributeToBeNullListener,
+      getAttributeContainOrMatchListener,
+      getAttributeEqualityListener,
+      invalidHasAttributeMatcherListener,
+      invalidGetAttributeMatcherListener,
+      hasAttributeEqualityListener,
+      hasAttributeTruthyOrFalsyListener,
+    ] = getPreferToHaveAttributeListeners({ report });
+
+    getAttributeToBeNullListener({
+      type: "CallExpression",
+      callee: {
+        type: "Identifier",
+        name: "getAttribute",
+      },
+      arguments: [createAttributeNameArgument()],
+    });
+    getAttributeToBeNullListener({
+      type: "CallExpression",
+      callee: createStaticMemberExpression(
+        {
+          type: "Identifier",
+          name: "element",
+        },
+        "getAttribute",
+      ),
+      arguments: [],
+    });
+
+    getAttributeToBeNullListener(createUnparentedAttributeCall("getAttribute"));
+    getAttributeContainOrMatchListener(createUnparentedAttributeCall("getAttribute"));
+    getAttributeEqualityListener(createUnparentedAttributeCall("getAttribute"));
+    invalidHasAttributeMatcherListener(createUnparentedAttributeCall("hasAttribute"));
+    invalidGetAttributeMatcherListener(createUnparentedAttributeCall("getAttribute"));
+    hasAttributeEqualityListener(createUnparentedAttributeCall("hasAttribute"));
+    hasAttributeTruthyOrFalsyListener(createUnparentedAttributeCall("hasAttribute"));
+
+    expect(reportCalls).toBe(0);
+  });
 });
