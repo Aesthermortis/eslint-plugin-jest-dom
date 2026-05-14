@@ -122,3 +122,207 @@ ruleTester.run("prefer-to-have-value", rule, {
     },
   ],
 });
+
+/**
+ * The rule selectors already narrow most AST shapes, so these defensive branches need direct listener invocation to
+ * stay covered.
+ *
+ * @param {object} context - Minimal ESLint rule context.
+ * @returns {Array.<(node: object) => void>} Prefer-to-have-value listeners.
+ */
+function getPreferToHaveValueListeners(context) {
+  const listeners = Object.values(rule.create(context));
+
+  expect(listeners).toHaveLength(3);
+
+  return listeners;
+}
+
+/**
+ * @param {object} object - Member object node.
+ * @param {string} propertyName - Member property name.
+ * @returns {object} Static member expression node.
+ */
+function createStaticMemberExpression(object, propertyName) {
+  return {
+    type: "MemberExpression",
+    computed: false,
+    object,
+    property: {
+      type: "Identifier",
+      name: propertyName,
+      range: [10, 15],
+    },
+  };
+}
+
+/** @returns {object} Testing Library query call node. */
+function createTextboxQueryCall() {
+  return {
+    type: "CallExpression",
+    callee: {
+      type: "Identifier",
+      name: "getByRole",
+    },
+    arguments: [
+      {
+        type: "Literal",
+        value: "textbox",
+      },
+    ],
+  };
+}
+
+/**
+ * @param {object} valueAccess - Element value access node.
+ * @returns {object} Positive matcher call node.
+ */
+function createPositiveValueMatcherCall(valueAccess) {
+  return {
+    type: "CallExpression",
+    callee: createStaticMemberExpression(
+      {
+        type: "CallExpression",
+        callee: {
+          type: "Identifier",
+          name: "expect",
+        },
+        arguments: [valueAccess],
+      },
+      "toBe",
+    ),
+    arguments: [
+      {
+        type: "Literal",
+        value: "hello",
+      },
+    ],
+  };
+}
+
+/**
+ * @param {object} valueAccess - Element value access node.
+ * @returns {object} Negated matcher call node.
+ */
+function createNegatedValueMatcherCall(valueAccess) {
+  return {
+    type: "CallExpression",
+    callee: createStaticMemberExpression(
+      createStaticMemberExpression(
+        {
+          type: "CallExpression",
+          callee: {
+            type: "Identifier",
+            name: "expect",
+          },
+          arguments: [valueAccess],
+        },
+        "not",
+      ),
+      "toBe",
+    ),
+    arguments: [
+      {
+        type: "Literal",
+        value: "hello",
+      },
+    ],
+  };
+}
+
+describe("prefer-to-have-value defensive AST handling", () => {
+  test("ignores malformed value assertions", () => {
+    let reportCalls = 0;
+    const report = () => {
+      reportCalls += 1;
+    };
+    const [positiveValueListener, negatedValueListener, valueAttributeListener] =
+      getPreferToHaveValueListeners({ report });
+
+    positiveValueListener({
+      callee: {
+        type: "Identifier",
+        name: "toBe",
+      },
+    });
+    positiveValueListener({
+      callee: createStaticMemberExpression(
+        {
+          type: "Identifier",
+          name: "expectResult",
+        },
+        "toBe",
+      ),
+    });
+    negatedValueListener({
+      callee: {
+        type: "Identifier",
+        name: "toBe",
+      },
+    });
+    negatedValueListener({
+      callee: createStaticMemberExpression(
+        createStaticMemberExpression(
+          {
+            type: "Identifier",
+            name: "expectResult",
+          },
+          "not",
+        ),
+        "toBe",
+      ),
+    });
+    valueAttributeListener({
+      callee: {
+        type: "Identifier",
+        name: "toHaveAttribute",
+      },
+      arguments: [],
+    });
+    valueAttributeListener({
+      callee: createStaticMemberExpression(
+        {
+          type: "CallExpression",
+          callee: {
+            type: "Identifier",
+            name: "expect",
+          },
+          arguments: [],
+        },
+        "toHaveAttribute",
+      ),
+      arguments: [
+        {
+          type: "Literal",
+          value: "value",
+        },
+      ],
+    });
+
+    expect(reportCalls).toBe(0);
+  });
+
+  test("returns null fixes when the value property token is unavailable", () => {
+    /** @type {Array.<{ fix: (fixer: object) => null }>} */
+    const reports = [];
+    /** @param {{ fix: (fixer: object) => null }} descriptor - Report descriptor captured from context.report(). */
+    const report = (descriptor) => {
+      reports.push(descriptor);
+    };
+    const [positiveValueListener, negatedValueListener] = getPreferToHaveValueListeners({
+      report,
+      sourceCode: {
+        getTokenBefore: () => null,
+      },
+    });
+    const positiveValueAccess = createStaticMemberExpression(createTextboxQueryCall(), "value");
+    const negatedValueAccess = createStaticMemberExpression(createTextboxQueryCall(), "value");
+    const fixer = {};
+
+    positiveValueListener(createPositiveValueMatcherCall(positiveValueAccess));
+    negatedValueListener(createNegatedValueMatcherCall(negatedValueAccess));
+
+    expect(reports).toHaveLength(2);
+    expect(reports.map((descriptor) => descriptor.fix(fixer))).toStrictEqual([null, null]);
+  });
+});
