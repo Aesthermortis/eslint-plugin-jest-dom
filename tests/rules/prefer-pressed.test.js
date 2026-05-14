@@ -86,3 +86,133 @@ ruleTester.run("prefer-pressed", rule, {
     },
   ],
 });
+
+/**
+ * The rule selector already narrows most AST shapes, so these defensive branches need direct listener invocation to
+ * stay covered.
+ *
+ * @param {object} context - Minimal ESLint rule context.
+ * @returns {(node: object) => void} Prefer-pressed assertion listener.
+ */
+function getPreferPressedListener(context) {
+  const listeners = Object.values(rule.create(context));
+
+  expect(listeners).toHaveLength(1);
+
+  const [listener] = listeners;
+
+  return listener;
+}
+
+describe("prefer-pressed defensive AST handling", () => {
+  test("ignores assertions whose callee is not a static member expression", () => {
+    let reportCalls = 0;
+    const report = () => {
+      reportCalls += 1;
+    };
+    const preferPressedListener = getPreferPressedListener({ report });
+
+    preferPressedListener({
+      callee: {
+        type: "Identifier",
+        name: "toHaveAttribute",
+      },
+      arguments: [],
+    });
+
+    expect(reportCalls).toBe(0);
+  });
+
+  test("ignores assertions whose expect target is not a call expression", () => {
+    let reportCalls = 0;
+    const report = () => {
+      reportCalls += 1;
+    };
+    const preferPressedListener = getPreferPressedListener({ report });
+
+    preferPressedListener({
+      callee: {
+        type: "MemberExpression",
+        computed: false,
+        object: {
+          type: "Identifier",
+          name: "expectResult",
+        },
+        property: {
+          type: "Identifier",
+          name: "toHaveAttribute",
+        },
+      },
+      arguments: [],
+    });
+
+    expect(reportCalls).toBe(0);
+  });
+
+  test("reports when a matcher argument has no raw source text", () => {
+    /** @type {object[]} */
+    const reports = [];
+    /** @param {object} descriptor - Report descriptor captured from context.report(). */
+    const report = (descriptor) => {
+      reports.push(descriptor);
+    };
+    const preferPressedListener = getPreferPressedListener({ report });
+
+    preferPressedListener({
+      callee: {
+        type: "MemberExpression",
+        computed: false,
+        object: {
+          type: "CallExpression",
+          callee: {
+            type: "Identifier",
+            name: "expect",
+          },
+          arguments: [
+            {
+              type: "CallExpression",
+              callee: {
+                type: "Identifier",
+                name: "getByRole",
+              },
+              arguments: [
+                {
+                  type: "Literal",
+                  value: "button",
+                  raw: '"button"',
+                },
+              ],
+            },
+          ],
+        },
+        property: {
+          type: "Identifier",
+          name: "toHaveAttribute",
+          range: [0, 15],
+        },
+      },
+      arguments: [
+        {
+          type: "Literal",
+          value: "aria-pressed",
+        },
+        {
+          type: "Literal",
+          value: "true",
+          raw: '"true"',
+        },
+      ],
+      range: [0, 40],
+    });
+
+    expect(reports).toHaveLength(1);
+    expect(reports[0]).toMatchObject({
+      messageId: "preferPressed",
+      data: {
+        preferred: "toBePressed",
+        incorrectFunction: "toHaveAttribute",
+        matcherArguments: ', "true"',
+      },
+    });
+  });
+});
