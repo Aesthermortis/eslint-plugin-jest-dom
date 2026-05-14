@@ -24,6 +24,8 @@ ruleTester.run("prefer-to-have-class", rule, {
     `const el = screen.getByText("foo"); expect(el).toHaveProperty("clazz", expect.stringContaining("bar"))`,
     `const el = screen.getByText("foo"); expect(el).not.toHaveProperty("clazz", expect.stringContaining("bar"))`,
     `const el = screen.getByText("foo"); expect(el).toHaveAttribute("class", expect.stringMatching("bar"));`,
+    `const el = screen.getByText("foo"); expect(el.className).toEqual(expect.stringContaining())`,
+    `const el = screen.getByText("foo"); expect(el).toHaveAttribute("class", expect.stringContaining())`,
     `const { result } = renderHook(() =>
         useMyHook({
           classes,
@@ -282,4 +284,246 @@ ruleTester.run("prefer-to-have-class", rule, {
       output: `const el = screen.getByText("foo"); expect(el).not.toHaveClass(foo("bar"))`,
     },
   ],
+});
+
+/**
+ * The rule selectors already narrow most AST shapes, so these defensive branches need direct listener invocation to
+ * stay covered.
+ *
+ * @param {object} context - Minimal ESLint rule context.
+ * @returns {Array.<(node: object) => void>} Prefer-to-have-class listeners.
+ */
+function getPreferToHaveClassListeners(context) {
+  const listeners = Object.values(rule.create(context));
+
+  expect(listeners).toHaveLength(9);
+
+  return listeners;
+}
+
+/**
+ * @param {object} object - Member object node.
+ * @param {string} propertyName - Member property name.
+ * @returns {object} Static member expression node.
+ */
+function createStaticMemberExpression(object, propertyName) {
+  return {
+    type: "MemberExpression",
+    computed: false,
+    object,
+    property: {
+      type: "Identifier",
+      name: propertyName,
+      range: [10, 15],
+    },
+  };
+}
+
+/**
+ * @param {string} matcherName - Jest matcher name.
+ * @param {object[]} args - Matcher arguments.
+ * @returns {object} Matcher call node.
+ */
+function createMatcherCall(matcherName, args = []) {
+  return {
+    type: "CallExpression",
+    callee: createStaticMemberExpression(
+      {
+        type: "CallExpression",
+        callee: {
+          type: "Identifier",
+          name: "expect",
+        },
+        arguments: [],
+      },
+      matcherName,
+    ),
+    arguments: args,
+  };
+}
+
+/**
+ * @param {string} matcherName - Jest matcher name.
+ * @param {object[]} args - Matcher arguments.
+ * @returns {object} Negated matcher call node.
+ */
+function createNegatedMatcherCall(matcherName, args = []) {
+  return {
+    type: "CallExpression",
+    callee: createStaticMemberExpression(
+      createStaticMemberExpression(
+        {
+          type: "CallExpression",
+          callee: {
+            type: "Identifier",
+            name: "expect",
+          },
+          arguments: [],
+        },
+        "not",
+      ),
+      matcherName,
+    ),
+    arguments: args,
+  };
+}
+
+/**
+ * @param {object} expectArgument - Argument passed to expect().
+ * @param {string} matcherName - Jest matcher name.
+ * @param {object[]} args - Matcher arguments.
+ * @returns {object} Matcher call node.
+ */
+function createMatcherCallWithExpectArgument(expectArgument, matcherName, args = []) {
+  return {
+    type: "CallExpression",
+    callee: createStaticMemberExpression(
+      {
+        type: "CallExpression",
+        callee: {
+          type: "Identifier",
+          name: "expect",
+        },
+        arguments: [expectArgument],
+      },
+      matcherName,
+    ),
+    arguments: args,
+  };
+}
+
+/**
+ * @param {object} matcherObject - Object used before the matcher property.
+ * @param {string} matcherName - Jest matcher name.
+ * @param {object[]} args - Matcher arguments.
+ * @returns {object} Matcher call node.
+ */
+function createMatcherCallOnObject(matcherObject, matcherName, args = []) {
+  return {
+    type: "CallExpression",
+    callee: createStaticMemberExpression(matcherObject, matcherName),
+    arguments: args,
+  };
+}
+
+/**
+ * @param {string} value - Literal value.
+ * @returns {object} Literal node.
+ */
+function createLiteral(value) {
+  return {
+    type: "Literal",
+    value,
+    range: [20, 25],
+  };
+}
+
+describe("prefer-to-have-class defensive AST handling", () => {
+  test("ignores malformed class assertions", () => {
+    let reportCalls = 0;
+    const report = () => {
+      reportCalls += 1;
+    };
+    const [
+      classListContainsListener,
+      classListIndexListener,
+      ,
+      classPropertyListener,
+      classPropertyMatcherListener,
+      negatedClassPropertyListener,
+      classAttributeListener,
+      negatedClassAttributeListener,
+      classAttributeMatcherListener,
+    ] = getPreferToHaveClassListeners({ report });
+    const malformedMatcherCall = {
+      type: "CallExpression",
+      callee: {
+        type: "Identifier",
+        name: "toBe",
+      },
+      arguments: [createLiteral("foo")],
+    };
+    const matcherCallWithoutExpectedValue = createMatcherCall("toBe", []);
+    const matcherCallWithoutExpectArgument = createMatcherCall("toBe", [createLiteral("foo")]);
+    const negatedMatcherCallWithoutExpectArgument = createNegatedMatcherCall("toBe", [
+      createLiteral("foo"),
+    ]);
+    const matcherCallWithoutClassAttribute = createMatcherCall("toHaveAttribute", []);
+    const matcherObjectIdentifier = {
+      type: "Identifier",
+      name: "expectResult",
+    };
+    const matcherCallOnIdentifier = createMatcherCallOnObject(matcherObjectIdentifier, "toBe", [
+      createLiteral("foo"),
+    ]);
+    const negatedMatcherCallOnIdentifier = createMatcherCallOnObject(
+      createStaticMemberExpression(matcherObjectIdentifier, "not"),
+      "toBe",
+      [createLiteral("foo")],
+    );
+    const classListContainsCall = {
+      type: "CallExpression",
+      callee: createStaticMemberExpression(
+        createStaticMemberExpression(
+          {
+            type: "Identifier",
+            name: "element",
+            range: [0, 7],
+          },
+          "classList",
+        ),
+        "contains",
+      ),
+      arguments: [createLiteral("foo")],
+    };
+
+    classListContainsListener(malformedMatcherCall);
+    classListContainsListener(matcherCallWithoutExpectArgument);
+    classListContainsListener(matcherCallOnIdentifier);
+    classListContainsListener(
+      createMatcherCallWithExpectArgument(classListContainsCall, "toHaveLength"),
+    );
+    classListIndexListener(malformedMatcherCall);
+    classListIndexListener(matcherCallWithoutExpectArgument);
+    classListIndexListener(matcherCallOnIdentifier);
+    classPropertyListener(malformedMatcherCall);
+    classPropertyListener(matcherCallWithoutExpectArgument);
+    classPropertyListener(matcherCallOnIdentifier);
+    classPropertyMatcherListener(matcherCallWithoutExpectedValue);
+    negatedClassPropertyListener(malformedMatcherCall);
+    negatedClassPropertyListener(matcherCallWithoutExpectArgument);
+    negatedClassPropertyListener(negatedMatcherCallWithoutExpectArgument);
+    negatedClassPropertyListener(negatedMatcherCallOnIdentifier);
+    classAttributeListener(malformedMatcherCall);
+    classAttributeListener(matcherCallWithoutClassAttribute);
+    classAttributeListener(
+      createMatcherCallOnObject(matcherObjectIdentifier, "toHaveAttribute", [
+        createLiteral("class"),
+        createLiteral("foo"),
+      ]),
+    );
+    classAttributeListener(
+      createMatcherCall("toHaveAttribute", [createLiteral("class"), createLiteral("foo")]),
+    );
+    classAttributeListener(
+      createMatcherCallWithExpectArgument(
+        {
+          type: "Identifier",
+          name: "element",
+        },
+        "toHaveAttribute",
+        [
+          {
+            type: "Identifier",
+            name: "class",
+          },
+          createLiteral("foo"),
+        ],
+      ),
+    );
+    negatedClassAttributeListener(negatedMatcherCallWithoutExpectArgument);
+    classAttributeMatcherListener(createMatcherCall("toHaveAttribute", [createLiteral("class")]));
+
+    expect(reportCalls).toBe(0);
+  });
 });
