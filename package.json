@@ -1,6 +1,6 @@
 {
   "name": "eslint-plugin-jest-dom",
-  "version": "6.0.0",
+  "version": "6.1.0",
   "description": "ESLint plugin to follow best practices and anticipate common mistakes when writing tests with jest-dom",
   "keywords": [
     "eslint",
