@@ -570,3 +570,333 @@ ruleTester.run("prefer-in-document", rule, {
   valid: valid.flat(),
   invalid: invalid.flat(),
 });
+
+/**
+ * The rule selectors already narrow most AST shapes, so these defensive branches need direct listener invocation to
+ * stay covered.
+ *
+ * @param {object} context - Minimal ESLint rule context.
+ * @returns {Array.<(node: object) => void>} Prefer-in-document listeners.
+ */
+function getPreferInDocumentListeners(context) {
+  const listeners = Object.values(rule.create(context));
+
+  expect(listeners).toHaveLength(4);
+
+  return listeners;
+}
+
+/**
+ * @param {object} object - Member object node.
+ * @param {string} propertyName - Member property name.
+ * @returns {object} Static member expression node.
+ */
+function createStaticMemberExpression(object, propertyName) {
+  const property = {
+    type: "Identifier",
+    name: propertyName,
+    range: [20, 30],
+  };
+  const member = {
+    type: "MemberExpression",
+    computed: false,
+    object,
+    property,
+  };
+
+  property.parent = member;
+
+  return member;
+}
+
+/** @returns {object} Testing Library query call node. */
+function createQueryCall() {
+  return {
+    type: "CallExpression",
+    callee: {
+      type: "Identifier",
+      name: "queryByText",
+    },
+    arguments: [
+      {
+        type: "Literal",
+        value: "foo",
+      },
+    ],
+  };
+}
+
+/** @returns {object} ESLint sourceCode stub with an identifier assignment. */
+function createSourceCodeWithQueryAssignment() {
+  return {
+    getScope: () => ({
+      set: new Map([
+        [
+          "element",
+          {
+            defs: [
+              {
+                node: {
+                  type: "VariableDeclarator",
+                  init: createQueryCall(),
+                },
+              },
+            ],
+            references: [],
+          },
+        ],
+      ]),
+    }),
+  };
+}
+
+describe("prefer-in-document defensive AST handling", () => {
+  test("ignores malformed matcher assertions", () => {
+    let reportCalls = 0;
+    const report = () => {
+      reportCalls += 1;
+    };
+    const [
+      negatedQueryListener,
+      assignedNegatedQueryListener,
+      assignedQueryListener,
+      queryListener,
+    ] = getPreferInDocumentListeners({
+      report,
+      sourceCode: createSourceCodeWithQueryAssignment(),
+    });
+    const malformedNode = {
+      type: "Identifier",
+      name: "toBeNull",
+    };
+    const queryCall = createQueryCall();
+    const negatedExpectMember = createStaticMemberExpression(
+      {
+        type: "Identifier",
+        name: "expectResult",
+      },
+      "not",
+    );
+    const assignedExpectCall = {
+      type: "CallExpression",
+      callee: {
+        type: "Identifier",
+        name: "expect",
+      },
+      arguments: [
+        {
+          type: "Identifier",
+          name: "element",
+        },
+      ],
+    };
+    const assignedExpectCallWithoutArgument = {
+      type: "CallExpression",
+      callee: {
+        type: "Identifier",
+        name: "expect",
+      },
+      arguments: [],
+    };
+    const assignedNotMember = createStaticMemberExpression(assignedExpectCall, "not");
+    const assignedMatcherMember = createStaticMemberExpression(assignedNotMember, "toBeNull");
+
+    negatedQueryListener(malformedNode);
+    negatedQueryListener({
+      type: "CallExpression",
+      callee: createStaticMemberExpression(
+        {
+          type: "Identifier",
+          name: "expectResult",
+        },
+        "toBeNull",
+      ),
+      arguments: [],
+    });
+    negatedQueryListener({
+      type: "CallExpression",
+      callee: createStaticMemberExpression(negatedExpectMember, "toBeNull"),
+      arguments: [],
+    });
+    negatedQueryListener({
+      type: "CallExpression",
+      callee: createStaticMemberExpression(
+        createStaticMemberExpression(
+          {
+            type: "CallExpression",
+            callee: {
+              type: "Identifier",
+              name: "expect",
+            },
+            arguments: Array.from({ length: 1 }),
+          },
+          "not",
+        ),
+        "toBeNull",
+      ),
+      arguments: [],
+    });
+    negatedQueryListener({
+      type: "CallExpression",
+      callee: createStaticMemberExpression(
+        createStaticMemberExpression(
+          {
+            type: "CallExpression",
+            callee: {
+              type: "Identifier",
+              name: "expect",
+            },
+            arguments: [
+              {
+                type: "CallExpression",
+                callee: {
+                  type: "Literal",
+                  value: "notAQuery",
+                },
+                arguments: [],
+              },
+            ],
+          },
+          "not",
+        ),
+        "toBeNull",
+      ),
+      arguments: [],
+    });
+    assignedNegatedQueryListener(malformedNode);
+    assignedNegatedQueryListener(createStaticMemberExpression(malformedNode, "toBeNull"));
+    assignedNegatedQueryListener(
+      createStaticMemberExpression(
+        createStaticMemberExpression(assignedExpectCallWithoutArgument, "not"),
+        "toBeNull",
+      ),
+    );
+    assignedNegatedQueryListener(assignedMatcherMember);
+    assignedQueryListener(malformedNode);
+    assignedQueryListener(createStaticMemberExpression(queryCall, "toBeNull"));
+    queryListener({
+      type: "CallExpression",
+      callee: createStaticMemberExpression(
+        {
+          type: "CallExpression",
+          callee: {
+            type: "Identifier",
+            name: "expect",
+          },
+          arguments: [
+            {
+              type: "CallExpression",
+              callee: {
+                type: "Literal",
+                value: "notAQuery",
+              },
+              arguments: [],
+            },
+          ],
+        },
+        "toBeNull",
+      ),
+      arguments: [],
+    });
+    queryListener(malformedNode);
+
+    expect(reportCalls).toBe(0);
+  });
+
+  test("ignores matcher calls without parent calls", () => {
+    let reportCalls = 0;
+    const report = () => {
+      reportCalls += 1;
+    };
+    const [
+      negatedQueryListener,
+      assignedNegatedQueryListener,
+      assignedQueryListener,
+      queryListener,
+    ] = getPreferInDocumentListeners({
+      report,
+      sourceCode: createSourceCodeWithQueryAssignment(),
+    });
+    const assignedExpectCall = {
+      type: "CallExpression",
+      callee: {
+        type: "Identifier",
+        name: "expect",
+      },
+      arguments: [
+        {
+          type: "Identifier",
+          name: "element",
+        },
+      ],
+    };
+    const assignedNotMember = createStaticMemberExpression(assignedExpectCall, "not");
+    const matcherCall = {
+      type: "CallExpression",
+      callee: createStaticMemberExpression(
+        {
+          type: "CallExpression",
+          callee: {
+            type: "Identifier",
+            name: "expect",
+          },
+          arguments: [createQueryCall()],
+        },
+        "toBeNull",
+      ),
+      arguments: [],
+    };
+    const sourceCodeWithInvalidQueryAssignment = {
+      getScope: () => ({
+        set: new Map([
+          [
+            "element",
+            {
+              defs: [
+                {
+                  node: {
+                    type: "VariableDeclarator",
+                    init: {
+                      type: "CallExpression",
+                      callee: {
+                        type: "Literal",
+                        value: "notAQuery",
+                      },
+                      arguments: [],
+                    },
+                  },
+                },
+              ],
+              references: [],
+            },
+          ],
+        ]),
+      }),
+    };
+    const [, assignedNegatedQueryWithInvalidAssignmentListener] = getPreferInDocumentListeners({
+      report,
+      sourceCode: sourceCodeWithInvalidQueryAssignment,
+    });
+    const assignedNotMemberWithInvalidQuery = createStaticMemberExpression(
+      assignedExpectCall,
+      "not",
+    );
+    const assignedMatcherMemberWithInvalidQuery = createStaticMemberExpression(
+      assignedNotMemberWithInvalidQuery,
+      "toBeNull",
+    );
+    assignedMatcherMemberWithInvalidQuery.parent = {
+      type: "CallExpression",
+      callee: assignedMatcherMemberWithInvalidQuery,
+      arguments: [],
+    };
+
+    negatedQueryListener(matcherCall);
+    assignedNegatedQueryWithInvalidAssignmentListener(assignedMatcherMemberWithInvalidQuery);
+    assignedNegatedQueryListener(createStaticMemberExpression(assignedNotMember, "toBeNull"));
+    assignedQueryListener(createStaticMemberExpression(assignedExpectCall, "toBeNull"));
+    queryListener(matcherCall);
+
+    expect(reportCalls).toBe(0);
+  });
+});
