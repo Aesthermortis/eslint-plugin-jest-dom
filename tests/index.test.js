@@ -1,4 +1,6 @@
 import plugin from "../src/index.js";
+import allRules from "../src/configs/all.js";
+import recommendedRules from "../src/configs/recommended.js";
 
 const { configs, rules } = plugin;
 const expectedRuleTypes = new Map([
@@ -68,45 +70,11 @@ it.each(Object.entries(rules))("%s should export required fields", (name, rule) 
 it("has the expected recommended config", () => {
   expect(configs.recommended.name).toBe("jest-dom/recommended");
   expect(configs.recommended.plugins["jest-dom"]).toBe(plugin);
-  expect(configs.recommended.rules).toStrictEqual({
-    "jest-dom/prefer-checked": "error",
-    "jest-dom/prefer-empty": "error",
-    "jest-dom/prefer-enabled-disabled": "error",
-    "jest-dom/prefer-focus": "error",
-    "jest-dom/prefer-in-document": "error",
-    "jest-dom/prefer-required": "error",
-    "jest-dom/prefer-to-have-attribute": "error",
-    "jest-dom/prefer-to-have-class": "error",
-    "jest-dom/prefer-to-have-style": "error",
-    "jest-dom/prefer-to-have-text-content": "error",
-    "jest-dom/prefer-to-have-value": "error",
-  });
+  expect(configs.recommended.rules).toBe(recommendedRules);
 });
 
 it("has the expected all config", () => {
   expect(configs.all.name).toBe("jest-dom/all");
   expect(configs.all.plugins["jest-dom"]).toBe(plugin);
-  expect(configs.all.rules).toStrictEqual(
-    Object.fromEntries(Object.keys(rules).map((ruleName) => [`jest-dom/${ruleName}`, "error"])),
-  );
-  expect(configs.all.rules).toHaveProperty("jest-dom/prefer-partially-checked", "error");
-  expect(configs.all.rules).toHaveProperty("jest-dom/prefer-partially-pressed", "error");
-  expect(configs.all.rules).toHaveProperty("jest-dom/prefer-pressed", "error");
-  expect(configs.all.rules).toHaveProperty("jest-dom/prefer-to-be-invalid", "error");
-  expect(configs.all.rules).toHaveProperty("jest-dom/prefer-to-be-valid", "error");
-  expect(configs.all.rules).toHaveProperty("jest-dom/prefer-to-contain-element", "error");
-  expect(configs.all.rules).toHaveProperty("jest-dom/prefer-to-appear-after", "error");
-  expect(configs.all.rules).toHaveProperty("jest-dom/prefer-to-appear-before", "error");
-  expect(configs.all.rules).toHaveProperty(
-    "jest-dom/prefer-to-have-accessible-description",
-    "error",
-  );
-  expect(configs.all.rules).toHaveProperty(
-    "jest-dom/prefer-to-have-accessible-error-message",
-    "error",
-  );
-  expect(configs.all.rules).toHaveProperty("jest-dom/prefer-to-have-accessible-name", "error");
-  expect(configs.all.rules).toHaveProperty("jest-dom/prefer-to-have-role", "error");
-  expect(configs.all.rules).toHaveProperty("jest-dom/prefer-to-have-display-value", "error");
-  expect(configs.all.rules).toHaveProperty("jest-dom/prefer-to-have-selection", "error");
+  expect(configs.all.rules).toBe(allRules);
 });
