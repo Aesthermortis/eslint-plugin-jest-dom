@@ -258,3 +258,94 @@ ruleTester.run("prefer-empty", rule, {
     },
   ],
 });
+
+/**
+ * The rule selectors already narrow most AST shapes, so these defensive branches need direct listener invocation to
+ * stay covered.
+ *
+ * @param {object} context - Minimal ESLint rule context.
+ * @returns {Array.<(node: object) => void>} Prefer-empty listeners.
+ */
+function getPreferEmptyListeners(context) {
+  const listeners = Object.values(rule.create(context));
+
+  expect(listeners).toHaveLength(8);
+
+  return listeners;
+}
+
+/**
+ * @param {object} object - Member object node.
+ * @param {string} propertyName - Member property name.
+ * @returns {object} Static member expression node.
+ */
+function createStaticMemberExpression(object, propertyName) {
+  return {
+    type: "MemberExpression",
+    computed: false,
+    object,
+    property: {
+      type: "Identifier",
+      name: propertyName,
+      range: [10, 15],
+    },
+  };
+}
+
+describe("prefer-empty defensive AST handling", () => {
+  test("ignores malformed empty assertions", () => {
+    let reportCalls = 0;
+    const report = () => {
+      reportCalls += 1;
+    };
+    const [
+      emptyInnerHtmlBinaryListener,
+      emptyFirstChildBinaryListener,
+      positiveInnerHtmlListener,
+      negativeInnerHtmlListener,
+      positiveFirstChildNullListener,
+      ,
+      negativeFirstChildNullListener,
+    ] = getPreferEmptyListeners({
+      report,
+      sourceCode: {
+        getText: () => "null",
+      },
+    });
+    const malformedNode = {
+      type: "Identifier",
+      name: "innerHTML",
+    };
+    const staticInnerHtmlNode = createStaticMemberExpression(
+      {
+        type: "Identifier",
+        name: "element",
+        range: [0, 7],
+      },
+      "innerHTML",
+    );
+    const staticFirstChildNode = createStaticMemberExpression(
+      {
+        type: "Identifier",
+        name: "element",
+        range: [0, 7],
+      },
+      "firstChild",
+    );
+
+    emptyInnerHtmlBinaryListener({
+      left: malformedNode,
+    });
+    emptyFirstChildBinaryListener({
+      left: staticFirstChildNode,
+    });
+    positiveInnerHtmlListener(malformedNode);
+    positiveInnerHtmlListener(staticInnerHtmlNode);
+    negativeInnerHtmlListener(malformedNode);
+    negativeInnerHtmlListener(staticInnerHtmlNode);
+    positiveFirstChildNullListener(malformedNode);
+    negativeFirstChildNullListener(staticFirstChildNode);
+
+    expect(reportCalls).toBe(0);
+  });
+});
