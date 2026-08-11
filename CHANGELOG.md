@@ -1,5 +1,30 @@
 # Changelog
 
+## [6.1.1](https://github.com/Aesthermortis/eslint-plugin-jest-dom/compare/v6.1.0...v6.1.1) (2026-06-23)
+
+
+### 🩹 Fixes
+
+* **types:** type config rules as rule records ([a625ebf](https://github.com/Aesthermortis/eslint-plugin-jest-dom/commit/a625ebf4abc56d166d1987304bc50a1acb668861))
+
+
+### 🧹 Chores
+
+* **configs:** assert config rule map identity ([5ce21dd](https://github.com/Aesthermortis/eslint-plugin-jest-dom/commit/5ce21ddd6540e903924eb543b20f8f6f1862b2c2))
+
+
+### 🤖 Automation
+
+* **deps-dev:** bump eslint-plugin-promise from `2409b06` to `a593505` ([1c97525](https://github.com/Aesthermortis/eslint-plugin-jest-dom/commit/1c97525609e321cb72524dd779c5f5e8d9091477))
+* **deps-dev:** bump eslint-plugin-promise from `5e51b71` to `2409b06` ([02d2fa6](https://github.com/Aesthermortis/eslint-plugin-jest-dom/commit/02d2fa6ebf11b0c94c4488af98ff7cbbdfc03959))
+* **deps-dev:** bump eslint-plugin-promise from `9d500d6` to `5e51b71` ([e22b175](https://github.com/Aesthermortis/eslint-plugin-jest-dom/commit/e22b1755415e1e3385a18aa772124e9f3d1064cc))
+* **deps-dev:** bump the dev-dependencies group with 3 updates ([#13](https://github.com/Aesthermortis/eslint-plugin-jest-dom/issues/13)) ([346d725](https://github.com/Aesthermortis/eslint-plugin-jest-dom/commit/346d72547e368cc7fecd64a440fb9dbea0f0e94b))
+* **deps-dev:** bump the dev-dependencies group with 4 updates ([#9](https://github.com/Aesthermortis/eslint-plugin-jest-dom/issues/9)) ([c5f538a](https://github.com/Aesthermortis/eslint-plugin-jest-dom/commit/c5f538ad3efd0c99bc081e202a82596a280b2cee))
+* **deps-dev:** bump the dev-dependencies group with 5 updates ([#11](https://github.com/Aesthermortis/eslint-plugin-jest-dom/issues/11)) ([13f2938](https://github.com/Aesthermortis/eslint-plugin-jest-dom/commit/13f29388626e1cb09774de8e90ffdad245643956))
+* **deps-dev:** bump the dev-dependencies group with 5 updates ([#7](https://github.com/Aesthermortis/eslint-plugin-jest-dom/issues/7)) ([054411a](https://github.com/Aesthermortis/eslint-plugin-jest-dom/commit/054411a695e2670eb69cd8442ee72aabd1624805))
+* **deps-dev:** bump the dev-dependencies group with 6 updates ([#15](https://github.com/Aesthermortis/eslint-plugin-jest-dom/issues/15)) ([5b11513](https://github.com/Aesthermortis/eslint-plugin-jest-dom/commit/5b1151393216a510c3a55d54ceb638d4deb13e9c))
+* **deps-dev:** bump the dev-dependencies group with 6 updates ([#17](https://github.com/Aesthermortis/eslint-plugin-jest-dom/issues/17)) ([559c6b5](https://github.com/Aesthermortis/eslint-plugin-jest-dom/commit/559c6b524f84646418d6f205ec18ac48af55ed4f))
+
 ## [6.1.0](https://github.com/Aesthermortis/eslint-plugin-jest-dom/compare/v6.0.0...v6.1.0) (2026-05-14)
 
 
